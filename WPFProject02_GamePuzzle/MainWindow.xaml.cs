@@ -31,6 +31,8 @@ namespace WPFProject02_GamePuzzle
             public int timeOfRound { get; set; }
             public int userName { get; set; }
             public int numberOfRounds { get; set; } //de sau :)))
+            public int timeScramble { get; set; }
+            public Tuple<int,int> blankPos { get; set; }
         }
 
         //class to control constants of details in game
@@ -107,6 +109,48 @@ namespace WPFProject02_GamePuzzle
                 line.X2 = GameConfigs.startX + (GameConfigs.numberOfRows) * GameConfigs.widthOfCell;
                 line.Y2 = GameConfigs.startY + i * GameConfigs.heightOfCell;
             }
+
         }
+
+        /*Game prepare*/
+        private void setupMatrix()
+        {
+            for (int i = 0; i < GameConfigs.numberOfRows; i++)
+                for (int j = 0; j < GameConfigs.numberOfColumns; j++)
+                    _matrix[i, j] = i*GameConfigs.numberOfRows + j + 1;
+            _matrix[GameConfigs.numberOfRows - 1, GameConfigs.numberOfColumns - 1] = 0;
+        }
+
+        private void swapVal(Tuple<int,int>a, Tuple<int,int>b)
+        {
+            var tmp = _matrix[a.Item1, a.Item2];
+            _matrix[a.Item1, a.Item2] = _matrix[b.Item1, b.Item2];
+            _matrix[b.Item1, b.Item2] = tmp;
+        }
+        
+        private void scambleMatrix()
+        {
+            Random random = new Random();
+            var tmpPos = Tuple.Create(GameConfigs.numberOfRows - 1, GameConfigs.numberOfColumns - 1);
+
+            for (int i=0; i < 20;i++)
+            {
+
+                //random generate to select next positon to swap
+                int nextX = 0, nextY = 0;
+
+                do
+                {
+                    nextX = random.Next(3) - 1;
+                    nextY = random.Next(3) - 1;
+                }
+                while (nextX < 0 || nextY < 0 || nextX > GameConfigs.numberOfRows - 1 || nextY > GameConfigs.numberOfColumns - 1 || (nextX==tmpPos.Item1)&&nextY==tmpPos.Item2);
+
+                swapVal(tmpPos, Tuple.Create(nextX, nextY));
+                tmpPos = Tuple.Create(nextX, nextY);
+        }
+
+    }
+
     }
 }
