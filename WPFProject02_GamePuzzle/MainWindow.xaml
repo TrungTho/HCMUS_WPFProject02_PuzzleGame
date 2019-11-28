@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:WPFProject02_GamePuzzle"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
-        Loaded="Window_Loaded">
+        Loaded="Window_Loaded"
+        MouseMove="Window_MouseMove">
     <Canvas Name="canvasUI">
         
     </Canvas>

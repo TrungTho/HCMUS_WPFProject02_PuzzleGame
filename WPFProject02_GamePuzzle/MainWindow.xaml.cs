@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -61,7 +62,6 @@ namespace WPFProject02_GamePuzzle
             {
                 GameConfigs.numberOfColumns = screen.userChoice;
                 GameConfigs.numberOfRows = screen.userChoice;
-
             }
         }
 
@@ -70,22 +70,15 @@ namespace WPFProject02_GamePuzzle
         Image[,] _image; //references to from model to UI
         Game _game; //New game initialized
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void drawLine()
         {
-            //get number of cell to split image
-            getSplit();
-
-            //Model
-            _matrix = new int[GameConfigs.numberOfRows, GameConfigs.numberOfColumns];
-            _image = new Image[GameConfigs.numberOfRows, GameConfigs.numberOfColumns];
-
             /*UI*/
             //Draw column
             for (int i = 0; i < GameConfigs.numberOfRows + 1; i++)
             {
                 var line = new Line();
                 line.StrokeThickness = 1;
-                line.Stroke = new SolidColorBrush(Colors.Black);
+                line.Stroke = new SolidColorBrush(Colors.Aqua);
                 canvasUI.Children.Add(line);
 
                 line.X1 = GameConfigs.startX + i * GameConfigs.widthOfCell;
@@ -100,7 +93,7 @@ namespace WPFProject02_GamePuzzle
             {
                 var line = new Line();
                 line.StrokeThickness = 1;
-                line.Stroke = new SolidColorBrush(Colors.Black);
+                line.Stroke = new SolidColorBrush(Colors.Aqua);
                 canvasUI.Children.Add(line);
 
                 line.X1 = GameConfigs.startX;
@@ -110,6 +103,44 @@ namespace WPFProject02_GamePuzzle
                 line.Y2 = GameConfigs.startY + i * GameConfigs.heightOfCell;
             }
 
+        }
+
+        private void loadImage()
+        {
+
+            for (int i = 0; i < GameConfigs.numberOfRows; i++)
+                for (int j = 0; j < GameConfigs.numberOfColumns; j++)
+                {
+                    if (_matrix[i,j]!=0)
+                    {
+                        int step = GameConfigs.numberOfColumns;
+                        string tmpImageName = $"DefaultImages/number{_matrix[i,j]}.png";
+                        var img = new Image();
+                        img.Width = GameConfigs.widthOfImage;
+                        img.Height = GameConfigs.heightOfImage;
+                        img.Source = new BitmapImage(new Uri(tmpImageName, UriKind.Relative));
+                        canvasUI.Children.Add(img);
+
+                        Canvas.SetLeft(img, GameConfigs.startX + j * GameConfigs.widthOfCell + (GameConfigs.widthOfCell - GameConfigs.widthOfImage) / 2);
+                        Canvas.SetTop(img, GameConfigs.startY + i * GameConfigs.heightOfCell + (GameConfigs.heightOfCell - GameConfigs.heightOfImage) / 2);
+                    }
+                }
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            //get number of cell to split image
+            getSplit();
+
+            //Model
+            _matrix = new int[GameConfigs.numberOfRows, GameConfigs.numberOfColumns];
+            _image = new Image[GameConfigs.numberOfRows, GameConfigs.numberOfColumns];
+
+            drawLine();
+            setupMatrix();
+            printToDebug();
+            scambleMatrix();
+            loadImage();
         }
 
         /*Game prepare*/
@@ -127,13 +158,13 @@ namespace WPFProject02_GamePuzzle
             _matrix[a.Item1, a.Item2] = _matrix[b.Item1, b.Item2];
             _matrix[b.Item1, b.Item2] = tmp;
         }
-        
+
         private void scambleMatrix()
         {
             Random random = new Random();
             var tmpPos = Tuple.Create(GameConfigs.numberOfRows - 1, GameConfigs.numberOfColumns - 1);
 
-            for (int i=0; i < 20;i++)
+            for (int i = 0; i < 20; i++)
             {
 
                 //random generate to select next positon to swap
@@ -144,13 +175,35 @@ namespace WPFProject02_GamePuzzle
                     nextX = random.Next(3) - 1;
                     nextY = random.Next(3) - 1;
                 }
-                while (nextX < 0 || nextY < 0 || nextX > GameConfigs.numberOfRows - 1 || nextY > GameConfigs.numberOfColumns - 1 || (nextX==tmpPos.Item1)&&nextY==tmpPos.Item2);
+                while (nextX < 0 || nextY < 0 || nextX > GameConfigs.numberOfRows - 1 || nextY > GameConfigs.numberOfColumns - 1 || (nextX == tmpPos.Item1) && nextY == tmpPos.Item2);
 
                 swapVal(tmpPos, Tuple.Create(nextX, nextY));
                 tmpPos = Tuple.Create(nextX, nextY);
+            }
+
+           // _game.blankPos = tmpPos;
+            printToDebug();
         }
 
-    }
+        private void printToDebug()
+        {
+            for (int i = 0; i < GameConfigs.numberOfColumns; i++)
+            {
+                for (int j = 0; j < GameConfigs.numberOfColumns; j++)
+                    Debug.Write(_matrix[i, j]);
+                Debug.WriteLine("");
+            }
+        }
 
+        private void Window_MouseMove(object sender, MouseEventArgs e)
+        {
+            var position = e.GetPosition(this);
+
+            int i = ((int)position.Y - GameConfigs.startY) / GameConfigs.heightOfCell;
+            int j = ((int)position.X - GameConfigs.startX) / GameConfigs.widthOfCell;
+
+            this.Title = $"{position.X} - {position.Y}, a[{i}][{j}]";
+
+        }
     }
 }
