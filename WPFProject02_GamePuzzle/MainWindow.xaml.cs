@@ -49,7 +49,7 @@ namespace WPFProject02_GamePuzzle
                 timeOfRound = 0;
                 userName = "";
                 numberOfRounds = 0;
-                numberOfScrambles = 2; //just for testing
+                numberOfScrambles = 10; //just for testing
                 blankPos = Tuple.Create(x, y);
                 isDragging = false;
                 selectedBitmap = null;
@@ -185,9 +185,19 @@ namespace WPFProject02_GamePuzzle
 
                         img.MouseLeftButtonDown += Image_MouseLeftButtonDown;
                         img.PreviewMouseLeftButtonUp += Image_PreviewMouseLeftButtonUp;
+                        //for debug tag of control
+                        img.MouseRightButtonUp += Img_MouseRightButtonUp;
+
                         img.Tag = new Tuple<int, int>(i, j);
                     }
                 }
+        }
+
+        private void Img_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var img = sender as Image;
+            var tag = img.Tag as Tuple<int,int>;
+           textblockForDebug.Text=$"tag: {tag.Item1} - {tag.Item2}";
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -245,8 +255,16 @@ namespace WPFProject02_GamePuzzle
 
                 do
                 {
-                    nextX = random.Next(3) - 1;
-                    nextY = random.Next(3) - 1;
+                    //random step in 2 dimesion
+                    do
+                    {
+                        nextX = random.Next(3) - 1;
+                        nextY = random.Next(3) - 1;
+                    }
+                    while (Math.Abs(nextX) + Math.Abs(nextY) > 1);
+                    
+                    nextX += tmpPos.Item1;
+                    nextY += tmpPos.Item2;
                 }
                 while (nextX < 0 || nextY < 0 || nextX > UIView.numberOfRows - 1 || nextY > UIView.numberOfColumns - 1 || (nextX == tmpPos.Item1) && nextY == tmpPos.Item2);
 
@@ -313,13 +331,16 @@ namespace WPFProject02_GamePuzzle
             //int i = tuple.Item1; 
             //int j = tuple.Item2;
 
+            //get last position of selectedImage
             int oldX = 0, oldY = 0;
             getPos(_game.newBlankPosition, ref oldX, ref oldY);
 
-            swapVal(_game.blankPos, Tuple.Create(oldX, oldY));
-            _game.blankPos = Tuple.Create(oldX, oldY);
+            //swap tag of selectedImage to blank cell that it just filled in
+            _game.selectedBitmap.Tag = _game.blankPos;
+            swapVal(_game.blankPos, Tuple.Create(oldX, oldY)); //swap value in model _matrix
+            _game.blankPos = Tuple.Create(oldX, oldY); //blankpos chage to last position of selectedImage
 
-            printToDebug();
+            //printToDebug();
 
             if (_game.isFinish(_matrix))
             {
@@ -335,6 +356,80 @@ namespace WPFProject02_GamePuzzle
             _game.selectedBitmap = sender as Image;
             _game.lastPosition = e.GetPosition(this);
             _game.newBlankPosition = e.GetPosition(this);
+        }
+
+        private int findChild(int x, int y)
+        {
+            for (int i=0; i < canvasUI.Children.Count;i++)
+            {
+                if (canvasUI.Children[i] is Image)
+                {
+                    var child = canvasUI.Children[i] as Image;
+                    var tag = child.Tag as Tuple<int, int>;
+                    if (tag.Item1 == x && tag.Item2 == y)
+                        return i;
+                }
+            }
+
+            textblockForDebug.Text = "can't find image";
+            return -1;
+        }
+
+        private void Img_KeyDown(object sender, KeyEventArgs e)
+        {
+            int nextX = _game.blankPos.Item1, nextY = _game.blankPos.Item2;
+
+            switch (e.Key)
+            {
+                case Key.Up:
+                    nextX -= 1;
+                    break;
+                case Key.Down:
+                    nextX += 1;
+                    break;
+                case Key.Left:
+                    nextY -= 1;
+                    break;
+                case Key.Right:
+                    nextY += 1;
+                    break;
+                default:
+                    break;
+            }
+
+            if (!(nextX < 0 || nextY < 0 || nextX > UIView.numberOfRows - 1 || nextY > UIView.numberOfColumns - 1))
+            {
+                _game.selectedBitmap = canvasUI.Children[findChild(nextX, nextY)] as Image;
+
+                int x = _game.blankPos.Item1, y = _game.blankPos.Item2;
+                Canvas.SetLeft(_game.selectedBitmap, UIView.startX + y * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
+                Canvas.SetTop(_game.selectedBitmap, UIView.startY + x * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
+
+                //code cua thay
+                //var image = sender as Image;
+                //var tuple = image.Tag as Tuple<int, int>;
+                //int i = tuple.Item1; 
+                //int j = tuple.Item2;
+
+                //get last position of selectedImage
+                int oldX = nextX, oldY = nextY;
+
+                //swap tag of selectedImage to blank cell that it just filled in
+                _game.selectedBitmap.Tag = _game.blankPos;
+                swapVal(_game.blankPos, Tuple.Create(oldX, oldY)); //swap value in model _matrix
+                _game.blankPos = Tuple.Create(oldX, oldY); //blankpos chage to last position of selectedImage
+
+                printToDebug();
+
+                if (_game.isFinish(_matrix))
+                {
+                    MessageBox.Show("Win!!!");
+                }
+
+                //debug
+                textblockForDebug.Text = $"{nextX} - {nextY}";
+            }
+
         }
     }
 }
