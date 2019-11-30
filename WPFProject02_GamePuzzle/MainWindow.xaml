@@ -6,8 +6,11 @@
         xmlns:local="clr-namespace:WPFProject02_GamePuzzle"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
-        Loaded="Window_Loaded">
-    <Canvas Name="canvasUI">
-        
+        Loaded="Window_Loaded"
+        MouseMove="Window_MouseMove"
+        KeyDown="Img_KeyDown">
+    <Canvas Name="canvasUI" >
+        <Label Content="debug:" Canvas.Left="434" Canvas.Top="90"/>
+        <TextBlock Name="textblockForDebug" Width="100" Height="25" Canvas.Left="434" Canvas.Top="121"/>
     </Canvas>
 </Window>
