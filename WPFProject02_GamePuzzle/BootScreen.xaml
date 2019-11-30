@@ -8,11 +8,13 @@
         Title="BootScreen" Height="400" Width="400">
     <Canvas>
         <TextBlock Text="Choose Mode:" FontSize="20" Canvas.Left="131" Canvas.Top="52"/>
-        <RadioButton Name="radio3_3" Content="3X3" IsChecked="True" FontSize="20" Canvas.Left="149" Canvas.Top="105" VerticalContentAlignment="Center"/>
-        <RadioButton Name="radio4_4" Content="4X4" FontSize="20" Canvas.Left="149" Canvas.Top="136" VerticalContentAlignment="Center"/>
-        <RadioButton Name="radio5_5" Content="5X5" FontSize="20" Canvas.Left="149" Canvas.Top="167" VerticalContentAlignment="Center"/>
-        <Button Name="buttonOK" Content="OK" IsDefault="True" Width="80" Height="25" Click="ButtonOK_Click" Canvas.Left="92" Canvas.Top="218"/>
-        <Button Name="buttonCancel" Content="Cancel" IsCancel="True" Width="80" Height="25" Canvas.Left="202" Canvas.Top="218"/>
+        <RadioButton Name="radio3_3" GroupName="numberOfCell" Content="3X3" IsChecked="True" FontSize="20" Canvas.Left="149" Canvas.Top="105" VerticalContentAlignment="Center" Height="26"/>
+        <RadioButton Name="radio4_4" GroupName="numberOfCell" Content="4X4" FontSize="20" Canvas.Left="149" Canvas.Top="136" VerticalContentAlignment="Center" Height="26"/>
+        <RadioButton Name="radio5_5" GroupName="numberOfCell" Content="5X5" FontSize="20" Canvas.Left="149" Canvas.Top="167" VerticalContentAlignment="Center" Height="26"/>
+        <RadioButton Name="radioDefaultImage" Content="Default Image" GroupName="typeOfImage" IsChecked="True" FontSize="20" Canvas.Left="39" Canvas.Top="198" VerticalContentAlignment="Center" Height="26"/>
+        <RadioButton Name="radioCustomImage" Content="Custom Image" GroupName="typeOfImage" FontSize="20" Canvas.Left="201" Canvas.Top="198" VerticalContentAlignment="Center"/>
+        <Button Name="buttonOK" Content="OK" IsDefault="True" Width="80" Height="25" Click="ButtonOK_Click" Canvas.Left="91" Canvas.Top="250"/>
+        <Button Name="buttonCancel" Content="Cancel" IsCancel="True" Width="80" Height="25" Canvas.Left="201" Canvas.Top="250"/>
 
     </Canvas>
 </Window>

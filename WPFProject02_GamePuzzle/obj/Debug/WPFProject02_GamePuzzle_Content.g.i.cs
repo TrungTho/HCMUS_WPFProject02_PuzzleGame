@@ -8,10 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("defaultimages/number21.png")]
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("defaultimages/number22.png")]
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("defaultimages/number23.png")]
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("defaultimages/number24.png")]
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("defaultimages/number25.png")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("defaultimages/preview3.png")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("defaultimages/preview4.png")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("defaultimages/preview5.png")]
 
 

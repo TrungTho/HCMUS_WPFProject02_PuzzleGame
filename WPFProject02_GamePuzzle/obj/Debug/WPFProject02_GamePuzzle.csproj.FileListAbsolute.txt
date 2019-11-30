@@ -1,7 +1,6 @@
 C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\bin\Debug\WPFProject02_GamePuzzle.exe.config
 C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\bin\Debug\WPFProject02_GamePuzzle.exe
 C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\bin\Debug\WPFProject02_GamePuzzle.pdb
-C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\obj\Debug\WPFProject02_GamePuzzle.csprojAssemblyReference.cache
 C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\obj\Debug\MainWindow.g.cs
 C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\obj\Debug\App.g.cs
 C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\obj\Debug\WPFProject02_GamePuzzle_MarkupCompile.cache
@@ -15,3 +14,4 @@ C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects
 C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\obj\Debug\WPFProject02_GamePuzzle.pdb
 C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\obj\Debug\BootScreen.g.cs
 C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\obj\Debug\BootScreen.baml
+C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\obj\Debug\WPFProject02_GamePuzzle.csprojAssemblyReference.cache

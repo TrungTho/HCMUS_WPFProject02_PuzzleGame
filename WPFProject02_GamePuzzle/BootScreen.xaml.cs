@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,6 +21,8 @@ namespace WPFProject02_GamePuzzle
     public partial class BootScreen : Window
     {
         public int userChoice { get; set; } //3 - 3x3, 4 - 4x4, 5 - 5x5
+        public bool isDefaultMode { get; set; } //load image from resources or from user choice
+        public string userImagePath { get; set; } //string to user image 
 
         public BootScreen()
         {
@@ -41,6 +44,21 @@ namespace WPFProject02_GamePuzzle
             {
                 userChoice = 5;
             }
+
+            if (radioDefaultImage.IsChecked == true)
+            {
+                isDefaultMode = true;
+            }
+            else
+            {
+                isDefaultMode = false;
+                var screen = new OpenFileDialog();
+                if (screen.ShowDialog() == true)
+                {
+                    userImagePath = screen.FileName;
+                }
+            }
+                    
             this.DialogResult = true;
             this.Close();
         }
