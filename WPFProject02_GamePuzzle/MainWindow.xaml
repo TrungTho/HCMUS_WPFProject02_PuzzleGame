@@ -10,7 +10,8 @@
         MouseMove="Window_MouseMove"
         KeyDown="Img_KeyDown">
     <Canvas Name="canvasUI" >
-        <Label Content="debug:" Canvas.Left="403" Canvas.Top="669"/>
+        <Label Content="debug:" Canvas.Left="403" Canvas.Top="669" />
         <TextBlock Name="textblockForDebug" Width="100" Height="25" Canvas.Left="469" Canvas.Top="669"/>
+        <TextBlock Name="textblockTimer" Text="" FontSize="30" TextAlignment="Center"  Width="100" Height="50" Background="Azure"/>
     </Canvas>
 </Window>

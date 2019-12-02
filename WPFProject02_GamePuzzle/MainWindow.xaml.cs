@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace WPFProject02_GamePuzzle
 {
@@ -26,6 +27,9 @@ namespace WPFProject02_GamePuzzle
             InitializeComponent();
         }
 
+        DispatcherTimer _countdownTimer;
+        private int _time;
+
         //class for game - controling
         class Game
         {
@@ -38,6 +42,7 @@ namespace WPFProject02_GamePuzzle
             public Image selectedBitmap { get; set; }
             public Point lastPosition { get; set; }
             public Point lastSelectedPosition { get; set; }
+            public int maxTime { get; set; } //minutes
 
             /// <summary>
             /// method to init new game before start, notice param numberOfScramble
@@ -49,12 +54,23 @@ namespace WPFProject02_GamePuzzle
                 //timeOfRound = 0;
                 userName = "";
                 //numberOfRounds = 0;
-                numberOfScrambles = 2; //just for testing
+                numberOfScrambles = 20; //just for testing
                 blankPos = Tuple.Create(x, y);
                 isDragging = false;
                 selectedBitmap = null;
+                maxTime = 3;
                 //lastPosition;
                 //newBlankPos;
+            }
+
+            public void Won()
+            {
+                MessageBox.Show("Win!!!");
+            }
+
+            public void Lose()
+            {
+                MessageBox.Show("timeout!");
             }
 
             public bool isFinish(int[,] _matrix)
@@ -95,10 +111,31 @@ namespace WPFProject02_GamePuzzle
             public const int widthOfPreviewImage = 200;
             public const int heightOfPreviewImage = 200;
             public const string fileSave = "saveGame.txt";
-
         }
 
-        
+        private void startTimer()
+        {
+            _time = _game.maxTime * 60;//convert from minute to second
+            _countdownTimer = new DispatcherTimer();
+            _countdownTimer.Interval = new TimeSpan(0, 0, 1);
+            _countdownTimer.Tick += _countdownTimer_Tick;
+            _countdownTimer.Start();
+        }
+
+        private void _countdownTimer_Tick(object sender, EventArgs e)
+        {
+            if (_time!=0)
+            {
+                _time--;
+                textblockTimer.Text = string.Format($"0{_time / 60}:{_time % 60}");
+            }
+            else
+            {
+                _game.Lose();
+                _countdownTimer.Stop();
+            }
+        }
+
         private string getMode()
         {
             var screen = new BootScreen();
@@ -106,6 +143,10 @@ namespace WPFProject02_GamePuzzle
             {
                 UIView.numberOfColumns = screen.userChoice;
                 UIView.numberOfRows = screen.userChoice;
+            }
+            else
+            {
+                this.Close();
             }
 
             UIView.previewImageStartX = ((int)this.Width - UIView.widthOfPreviewImage) / 2;
@@ -136,7 +177,7 @@ namespace WPFProject02_GamePuzzle
 
         //model init
         int[,] _matrix; //matrix of images initialized
-        Image[,] _image; //references to from model to UI
+        Image[] _image; //references to from model to UI
         Game _game; //New game initialized
 
         /// <summary>
@@ -220,7 +261,7 @@ namespace WPFProject02_GamePuzzle
                     }
                 }
         }
-        
+
         /// <summary>
         /// load image from file seletion
         /// </summary>
@@ -246,6 +287,7 @@ namespace WPFProject02_GamePuzzle
             Canvas.SetLeft(previewImg, UIView.previewImageStartX);
             Canvas.SetTop(previewImg, UIView.previewImageStartY);
 
+            //crop image and store in model _image
             for (int i = 0; i < UIView.numberOfRows; i++)
             {
                 for (int j = 0; j < UIView.numberOfColumns; j++)
@@ -262,29 +304,40 @@ namespace WPFProject02_GamePuzzle
                         img.Width = UIView.widthOfImage;
                         img.Height = UIView.heightOfImage;
                         img.Source = cropBitmap;
-                        canvasUI.Children.Add(img);
+                        //canvasUI.Children.Add(img);
 
-                        Canvas.SetLeft(img, UIView.cellsStartX + j * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
-                        Canvas.SetTop(img, UIView.cellsStartY + i * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
+                        //Canvas.SetLeft(img, UIView.cellsStartX + j * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
+                        //Canvas.SetTop(img, UIView.cellsStartY + i * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
 
                         img.MouseLeftButtonDown += Image_MouseLeftButtonDown;
                         img.PreviewMouseLeftButtonUp += Image_PreviewMouseLeftButtonUp;
                         //for debug tag of control
                         img.MouseRightButtonUp += Img_MouseRightButtonUp;
 
+                        _image[i * UIView.numberOfRows + 1 + j] = img;
+                        //img.Tag = new Tuple<int, int>(i, j);
+                    }
+                }
+            }
+
+            //load image with scrambled _matrix
+            for (int i = 0; i < UIView.numberOfRows; i++)
+            {
+                for (int j = 0; j < UIView.numberOfColumns; j++)
+                {
+                    if (_matrix[i, j] != 0) 
+                    {
+                        var img = _image[_matrix[i, j]];
+
+                        canvasUI.Children.Add(img);
+                        Canvas.SetLeft(img, UIView.cellsStartX + j * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
+                        Canvas.SetTop(img, UIView.cellsStartY + i * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
+
                         img.Tag = new Tuple<int, int>(i, j);
                     }
                 }
             }
         }
-
-        private void Img_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            var img = sender as Image;
-            var tag = img.Tag as Tuple<int,int>;
-           textblockForDebug.Text=$"tag: {tag.Item1} - {tag.Item2}";
-        }
-
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             //get number of cell to split image
@@ -292,15 +345,21 @@ namespace WPFProject02_GamePuzzle
 
             //Model
             _matrix = new int[UIView.numberOfRows, UIView.numberOfColumns];
-            _image = new Image[UIView.numberOfRows, UIView.numberOfColumns];
+            _image = new Image[UIView.numberOfRows * UIView.numberOfColumns];
             _game = new Game();
             _game.InitGame(UIView.numberOfRows-1, UIView.numberOfColumns-1);
 
-
-            drawLine();
+            //timer
+            Canvas.SetLeft(textblockTimer, (this.Width - textblockTimer.Width) / 2);
+            Canvas.SetTop(textblockTimer, 0);
+            startTimer();
+            
+            //model
             setupMatrix();
-            //printToDebug();
             scambleMatrix();
+
+            //UI
+            drawLine();
             if (isDefaultMode == "")
             {
                 loadDefaultImage();
@@ -436,7 +495,7 @@ namespace WPFProject02_GamePuzzle
 
                 if (_game.isFinish(_matrix))
                 {
-                    MessageBox.Show("Win!!!");
+                    _game.Won();
                 }
             }
             else //return image to old position
@@ -533,6 +592,14 @@ namespace WPFProject02_GamePuzzle
                 textblockForDebug.Text = $"{nextX} - {nextY}";
             }
 
+        }
+
+        //debug stuffs
+        private void Img_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var img = sender as Image;
+            var tag = img.Tag as Tuple<int, int>;
+            textblockForDebug.Text = $"tag: {tag.Item1} - {tag.Item2}";
         }
     }
 }
