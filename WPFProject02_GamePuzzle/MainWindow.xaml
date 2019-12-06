@@ -9,7 +9,9 @@
         Title="MainWindow" Height="750" Width="600"
         Loaded="Window_Loaded"
         MouseMove="Window_MouseMove"
-        KeyDown="Img_KeyDown">
+        KeyUp="Img_KeyUp"
+        MouseLeave="RibbonWindow_MouseLeave"
+                   >
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -18,19 +20,13 @@
         <Fluent:Ribbon Grid.Row="0">
             <!--Backstage-->
             <Fluent:Ribbon.Menu>
-                <Fluent:ApplicationMenu Header="Options" Foreground="Black" Background="CadetBlue">
+                <Fluent:Backstage Header="Options" Foreground="Black" Background="CadetBlue">
                     <Fluent:BackstageTabControl>
-                        <Fluent:Button Click="newGame_Click">
-                            <AccessText>_New game</AccessText>
-                        </Fluent:Button>
-                        <Fluent:Button Click="saveGame_Click">
-                            <AccessText>_Save game</AccessText>
-                        </Fluent:Button>
-                        <Fluent:Button Click="loadGame_Click">
-                            <AccessText>_Load game</AccessText>
-                        </Fluent:Button>
-                        </Fluent:BackstageTabControl>
-                </Fluent:ApplicationMenu>
+                        <Fluent:Button Click="newGame_Click" Header="New game"/>
+                        <Fluent:Button Click="saveGame_Click" Header="Save game"/>
+                        <Fluent:Button Click="loadGame_Click" Header="Load game"/>
+                    </Fluent:BackstageTabControl>
+                </Fluent:Backstage>
             </Fluent:Ribbon.Menu>
         </Fluent:Ribbon>
 
