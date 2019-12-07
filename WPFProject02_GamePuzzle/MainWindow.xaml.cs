@@ -34,16 +34,16 @@ namespace WPFProject02_GamePuzzle
         //class for game - controling
         class Game
         {
-            public string userName { get; set; }
-            public int numberOfScrambles { get; set; }
-            public Tuple<int,int> blankPos { get; set; }
-            public bool isDragging { get; set; }
-            public Image selectedBitmap { get; set; }
-            public Point lastPosition { get; set; }
-            public Point lastSelectedPosition { get; set; }
-            public int maxTime { get; set; } //minutes
-            public string imagePath { get; set; }
-            public bool isNewGame { get; set; } //to dectect user load game or just init a new game
+            public string UserName { get; set; }
+            public int NumberOfScrambles { get; set; }
+            public Tuple<int,int> BlankPos { get; set; }
+            public bool IsDragging { get; set; }
+            public Image SelectedBitmap { get; set; }
+            public Point LastPosition { get; set; }
+            public Point LastSelectedPosition { get; set; }
+            public int MaxTime { get; set; } //minutes
+            public string ImagePath { get; set; }
+            public bool IsNewGame { get; set; } //to dectect user load game or just init a new game
 
 
             /// <summary>
@@ -54,14 +54,14 @@ namespace WPFProject02_GamePuzzle
             public void InitGame(int x, int y)
             {
                 //timeOfRound = 0;
-                userName = "";
+                UserName = "";
                 //numberOfRounds = 0;
-                numberOfScrambles = 20; //just for testing
-                blankPos = Tuple.Create(x, y);
-                isDragging = false;
-                selectedBitmap = null;
-                maxTime = 3;
-                isNewGame = true;
+                NumberOfScrambles = 10;//UIView.NumberOfColumns*20; //just for testing
+                BlankPos = Tuple.Create(x, y);
+                IsDragging = false;
+                SelectedBitmap = null;
+                MaxTime = 3;
+                IsNewGame = true;
                 //lastPosition;
                 //newBlankPos;
             }
@@ -79,13 +79,13 @@ namespace WPFProject02_GamePuzzle
 
             public bool isFinish(int[,] _matrix)
             {
-                for (int i = 0; i < UIView.numberOfRows; i++)
+                for (int i = 0; i < UIView.NumberOfRows; i++)
                 {
-                    for (int j = 0; j < UIView.numberOfColumns; j++)
+                    for (int j = 0; j < UIView.NumberOfColumns; j++)
                     {
-                        if (i != UIView.numberOfRows - 1 || j != UIView.numberOfColumns - 1) 
+                        if (i != UIView.NumberOfRows - 1 || j != UIView.NumberOfColumns - 1) 
                         {
-                            if (_matrix[i, j] != i * UIView.numberOfColumns + j + 1)
+                            if (_matrix[i, j] != i * UIView.NumberOfColumns + j + 1)
                                 return false;
                         }
                     }
@@ -98,12 +98,12 @@ namespace WPFProject02_GamePuzzle
         public class UIView
         {
             //changeabel value
-            public static int numberOfRows { get; set; }
-            public static int numberOfColumns { get; set; }
-            public static int cellsStartX { get; set; }
-            public static int cellsStartY { get; set; }
-            public static int previewImageStartX { get; set; }
-            public static int previewImageStartY { get; set; }
+            public static int NumberOfRows { get; set; }
+            public static int NumberOfColumns { get; set; }
+            public static int CellsStartX { get; set; }
+            public static int CellsStartY { get; set; }
+            public static int PreviewImageStartX { get; set; }
+            public static int PreviewImageStartY { get; set; }
 
             //Constant for specifications
             //public const int topOffset = 40;
@@ -119,7 +119,7 @@ namespace WPFProject02_GamePuzzle
 
         private void startTimer()
         {
-            _time = _game.maxTime * 60;//convert from minute to second
+            _time = _game.MaxTime * 60;//convert from minute to second
             _countdownTimer = new DispatcherTimer();
             _countdownTimer.Interval = new TimeSpan(0, 0, 1);
             _countdownTimer.Tick += _countdownTimer_Tick;
@@ -131,7 +131,9 @@ namespace WPFProject02_GamePuzzle
             if (_time!=0)
             {
                 _time--;
-                textblockTimer.Text = string.Format($"0{_time / 60}:{_time % 60}");
+                int minute = _time / 60;
+                int second = _time % 60;
+                textblockTimer.Text = string.Format("{0}:{1}",minute.ToString().PadLeft(2,'0'),second.ToString().PadLeft(2,'0'));
             }
             else
             {
@@ -147,8 +149,8 @@ namespace WPFProject02_GamePuzzle
                 var screen = new BootScreen();
                 if (screen.ShowDialog() == true)
                 {
-                    UIView.numberOfColumns = screen.userChoice;
-                    UIView.numberOfRows = screen.userChoice;
+                    UIView.NumberOfColumns = screen.userChoice;
+                    UIView.NumberOfRows = screen.userChoice;
                 }
                 else
                 {
@@ -160,15 +162,15 @@ namespace WPFProject02_GamePuzzle
                 if (screen.isDefaultMode == false)
                     resMode = screen.userImagePath;
 
-                _game.imagePath = resMode;
+                _game.ImagePath = resMode;
             }
 
             //calculate coordinate of preview image and cells
-            UIView.previewImageStartX = ((int)this.Width - UIView.widthOfPreviewImage) / 2;
-            UIView.previewImageStartY = ((int)this.Height - UIView.heightOfPreviewImage - UIView.numberOfRows * UIView.heightOfCell) / 6 + (int)textblockTimer.Height;
+            UIView.PreviewImageStartX = ((int)this.Width - UIView.widthOfPreviewImage) / 2;
+            UIView.PreviewImageStartY = ((int)this.Height - UIView.heightOfPreviewImage - UIView.NumberOfRows * UIView.heightOfCell) / 6 + (int)textblockTimer.Height;
 
-            UIView.cellsStartX = ((int)this.Width - UIView.numberOfColumns * UIView.widthOfCell) / 2;
-            UIView.cellsStartY = 2 * UIView.previewImageStartY + UIView.heightOfPreviewImage;
+            UIView.CellsStartX = ((int)this.Width - UIView.NumberOfColumns * UIView.widthOfCell) / 2;
+            UIView.CellsStartY = 2 * UIView.PreviewImageStartY + UIView.heightOfPreviewImage;
         }
 
         /// <summary>
@@ -179,14 +181,15 @@ namespace WPFProject02_GamePuzzle
         /// <param name="j"></param> in - 0, out - coordinate in matrix
         private void getPos(Point position,ref int i, ref int j)
         {
-            i = ((int)position.Y - UIView.cellsStartY) / UIView.heightOfCell;
-            j = ((int)position.X - UIView.cellsStartX) / UIView.widthOfCell;
+            i = ((int)position.Y - UIView.CellsStartY) / UIView.heightOfCell;
+            j = ((int)position.X - UIView.CellsStartX) / UIView.widthOfCell;
         }
 
         //model init
         int[,] _matrix; //matrix of images initialized
         Image[] _image; //references to from model to UI
         Game _game; //New game initialized
+        List<string> _moves;
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -206,33 +209,33 @@ namespace WPFProject02_GamePuzzle
         {
             /*UI*/
             //Draw column
-            for (int i = 0; i < UIView.numberOfRows + 1; i++)
+            for (int i = 0; i < UIView.NumberOfRows + 1; i++)
             {
                 var line = new Line();
-                line.StrokeThickness = 1;
+                line.StrokeThickness = 2;
                 line.Stroke = new SolidColorBrush(Colors.Aqua);
                 canvasUI.Children.Add(line);
 
-                line.X1 = UIView.cellsStartX + i * UIView.widthOfCell;
-                line.Y1 = UIView.cellsStartY;
+                line.X1 = UIView.CellsStartX + i * UIView.widthOfCell;
+                line.Y1 = UIView.CellsStartY;
 
-                line.X2 = UIView.cellsStartX + i * UIView.widthOfCell;
-                line.Y2 = UIView.cellsStartY + (UIView.numberOfColumns) * UIView.heightOfCell;
+                line.X2 = UIView.CellsStartX + i * UIView.widthOfCell;
+                line.Y2 = UIView.CellsStartY + (UIView.NumberOfColumns) * UIView.heightOfCell;
             }
 
             //Draw row
-            for (int i = 0; i < UIView.numberOfColumns + 1; i++)
+            for (int i = 0; i < UIView.NumberOfColumns + 1; i++)
             {
                 var line = new Line();
-                line.StrokeThickness = 1;
+                line.StrokeThickness = 2;
                 line.Stroke = new SolidColorBrush(Colors.Aqua);
                 canvasUI.Children.Add(line);
 
-                line.X1 = UIView.cellsStartX;
-                line.Y1 = UIView.cellsStartY + i * UIView.heightOfCell;
+                line.X1 = UIView.CellsStartX;
+                line.Y1 = UIView.CellsStartY + i * UIView.heightOfCell;
 
-                line.X2 = UIView.cellsStartX + (UIView.numberOfRows) * UIView.widthOfCell;
-                line.Y2 = UIView.cellsStartY + i * UIView.heightOfCell;
+                line.X2 = UIView.CellsStartX + (UIView.NumberOfRows) * UIView.widthOfCell;
+                line.Y2 = UIView.CellsStartY + i * UIView.heightOfCell;
             }
 
         }
@@ -243,7 +246,7 @@ namespace WPFProject02_GamePuzzle
         private void loadDefaultImage()
         {
             //load preview image
-            string tmpPreviewName = $"DefaultImages/preview{UIView.numberOfRows}.png";
+            string tmpPreviewName = $"DefaultImages/preview{UIView.NumberOfRows}.png";
             var previewImg = new Image();
             previewImg.Width = UIView.widthOfPreviewImage;
             previewImg.Height = UIView.heightOfPreviewImage;
@@ -251,16 +254,16 @@ namespace WPFProject02_GamePuzzle
             canvasUI.Children.Add(previewImg);
             previewImg.Tag = Tuple.Create(-1, -1);
 
-            Canvas.SetLeft(previewImg, UIView.previewImageStartX);
-            Canvas.SetTop(previewImg, UIView.previewImageStartY);
+            Canvas.SetLeft(previewImg, UIView.PreviewImageStartX);
+            Canvas.SetTop(previewImg, UIView.PreviewImageStartY);
 
             //load cell - images
-            for (int i = 0; i < UIView.numberOfRows; i++)
-                for (int j = 0; j < UIView.numberOfColumns; j++)
+            for (int i = 0; i < UIView.NumberOfRows; i++)
+                for (int j = 0; j < UIView.NumberOfColumns; j++)
                 {
                     if (_matrix[i, j] != 0)
                     {
-                        int step = UIView.numberOfColumns;
+                        int step = UIView.NumberOfColumns;
                         string tmpImageName = $"DefaultImages/number{_matrix[i, j]}.png";
                         var img = new Image();
                         img.Width = UIView.widthOfImage;
@@ -268,8 +271,8 @@ namespace WPFProject02_GamePuzzle
                         img.Source = new BitmapImage(new Uri(tmpImageName, UriKind.Relative));
                         canvasUI.Children.Add(img);
 
-                        Canvas.SetLeft(img, UIView.cellsStartX + j * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
-                        Canvas.SetTop(img, UIView.cellsStartY + i * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
+                        Canvas.SetLeft(img, UIView.CellsStartX + j * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
+                        Canvas.SetTop(img, UIView.CellsStartY + i * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
 
                         img.MouseLeftButtonDown += Image_MouseLeftButtonDown;
                         img.PreviewMouseLeftButtonUp += Image_PreviewMouseLeftButtonUp;
@@ -303,18 +306,18 @@ namespace WPFProject02_GamePuzzle
             canvasUI.Children.Add(previewImg);
             previewImg.Tag = Tuple.Create(-1, -1);
 
-            Canvas.SetLeft(previewImg, UIView.previewImageStartX);
-            Canvas.SetTop(previewImg, UIView.previewImageStartY);
+            Canvas.SetLeft(previewImg, UIView.PreviewImageStartX);
+            Canvas.SetTop(previewImg, UIView.PreviewImageStartY);
 
             //crop image and store in model _image
-            for (int i = 0; i < UIView.numberOfRows; i++)
+            for (int i = 0; i < UIView.NumberOfRows; i++)
             {
-                for (int j = 0; j < UIView.numberOfColumns; j++)
+                for (int j = 0; j < UIView.NumberOfColumns; j++)
                 {
-                    if ((i != UIView.numberOfRows - 1) || (j != UIView.numberOfColumns - 1))
+                    if ((i != UIView.NumberOfRows - 1) || (j != UIView.NumberOfColumns - 1))
                     {
-                        var h = (int)leng / UIView.numberOfRows;
-                        var w = (int)leng / UIView.numberOfColumns;
+                        var h = (int)leng / UIView.NumberOfRows;
+                        var w = (int)leng / UIView.NumberOfColumns;
                         var rect = new Int32Rect(j * w, i * h, w, h);
                         var cropBitmap = new CroppedBitmap(source, rect);
 
@@ -333,24 +336,24 @@ namespace WPFProject02_GamePuzzle
                         //for debug tag of control
                         img.MouseRightButtonUp += Img_MouseRightButtonUp;
 
-                        _image[i * UIView.numberOfRows + 1 + j] = img;
+                        _image[i * UIView.NumberOfRows + 1 + j] = img;
                         //img.Tag = new Tuple<int, int>(i, j);
                     }
                 }
             }
 
             //load image with scrambled _matrix
-            for (int i = 0; i < UIView.numberOfRows; i++)
+            for (int i = 0; i < UIView.NumberOfRows; i++)
             {
-                for (int j = 0; j < UIView.numberOfColumns; j++)
+                for (int j = 0; j < UIView.NumberOfColumns; j++)
                 {
                     if (_matrix[i, j] != 0)
                     {
                         var img = _image[_matrix[i, j]];
 
                         canvasUI.Children.Add(img);
-                        Canvas.SetLeft(img, UIView.cellsStartX + j * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
-                        Canvas.SetTop(img, UIView.cellsStartY + i * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
+                        Canvas.SetLeft(img, UIView.CellsStartX + j * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
+                        Canvas.SetTop(img, UIView.CellsStartY + i * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
 
                         img.Tag = new Tuple<int, int>(i, j);
                     }
@@ -370,26 +373,48 @@ namespace WPFProject02_GamePuzzle
             _matrix[b.Item1, b.Item2] = tmp;
         }
 
+        private string getDirect(Tuple<int, int> oldPos, Tuple<int, int> newPos)
+        {
+            string res = "";
+
+            if (oldPos.Item1 == newPos.Item1)
+            {
+                if (oldPos.Item2 > newPos.Item2)
+                    res = "L";
+                else
+                    res = "R";
+            }
+            else
+                if (oldPos.Item1 > newPos.Item1)
+                {
+                    res = "U";
+                }
+                else
+                    res = "D";
+
+            return res;
+        }
+
         /// <summary>
         /// funtion to scamble the both model _matrix and UI Image
         /// </summary>
         private void scambleMatrix()
         {
             //set up basis value for matrix
-            for (int i = 0; i < UIView.numberOfRows; i++)
+            for (int i = 0; i < UIView.NumberOfRows; i++)
             {
-                for (int j = 0; j < UIView.numberOfColumns; j++)
+                for (int j = 0; j < UIView.NumberOfColumns; j++)
                 {
-                    _matrix[i, j] = i * UIView.numberOfRows + j + 1;
+                    _matrix[i, j] = i * UIView.NumberOfRows + j + 1;
                 }
             }
-            _matrix[UIView.numberOfRows - 1, UIView.numberOfColumns - 1] = 0; //blank pos
+            _matrix[UIView.NumberOfRows - 1, UIView.NumberOfColumns - 1] = 0; //blank pos
 
             //scramble this matrix
             Random random = new Random();
-            var tmpPos = Tuple.Create(UIView.numberOfRows - 1, UIView.numberOfColumns - 1);
+            var tmpPos = Tuple.Create(UIView.NumberOfRows - 1, UIView.NumberOfColumns - 1);
 
-            for (int i = 0; i < _game.numberOfScrambles; i++)
+            for (int i = 0; i < _game.NumberOfScrambles; i++)
             {
 
                 //random generate to select next positon to swap
@@ -408,13 +433,14 @@ namespace WPFProject02_GamePuzzle
                     nextX += tmpPos.Item1;
                     nextY += tmpPos.Item2;
                 }
-                while (nextX < 0 || nextY < 0 || nextX > UIView.numberOfRows - 1 || nextY > UIView.numberOfColumns - 1 || (nextX == tmpPos.Item1) && nextY == tmpPos.Item2);
+                while (nextX < 0 || nextY < 0 || nextX > UIView.NumberOfRows - 1 || nextY > UIView.NumberOfColumns - 1 || (nextX == tmpPos.Item1) && nextY == tmpPos.Item2);
 
+                _moves.Add(getDirect(tmpPos, Tuple.Create(nextX, nextY)));
                 swapVal(tmpPos, Tuple.Create(nextX, nextY));
                 tmpPos = Tuple.Create(nextX, nextY);
             }
 
-            _game.blankPos = tmpPos;
+            _game.BlankPos = tmpPos;
             //printToDebug();
         }
 
@@ -423,9 +449,9 @@ namespace WPFProject02_GamePuzzle
         {
             Debug.WriteLine("----------");
 
-            for (int i = 0; i < UIView.numberOfColumns; i++)
+            for (int i = 0; i < UIView.NumberOfColumns; i++)
             {
-                for (int j = 0; j < UIView.numberOfColumns; j++)
+                for (int j = 0; j < UIView.NumberOfColumns; j++)
                     Debug.Write(_matrix[i, j]);
                 Debug.WriteLine("");
             }
@@ -440,49 +466,52 @@ namespace WPFProject02_GamePuzzle
             int i = 0, j = 0;
             getPos(position, ref i, ref j);
 
-            this.Title = $"{position.X} - {position.Y}, a[{i}][{j}] , blank: [{_game.blankPos.Item1}],[{_game.blankPos.Item2}]";
+            this.Title = $"{position.X} - {position.Y}, a[{i}][{j}] , blank: [{_game.BlankPos.Item1}],[{_game.BlankPos.Item2}]";
 
-            if (_game.isDragging) 
+            if (_game.IsDragging) 
             {
-                var dx = position.X - _game.lastPosition.X;
-                var dy = position.Y - _game.lastPosition.Y;
+                var dx = position.X - _game.LastPosition.X;
+                var dy = position.Y - _game.LastPosition.Y;
 
-                var lastLeft = Canvas.GetLeft(_game.selectedBitmap);
-                var lastTop = Canvas.GetTop(_game.selectedBitmap);
-                Canvas.SetLeft(_game.selectedBitmap, lastLeft + dx);
-                Canvas.SetTop(_game.selectedBitmap, lastTop + dy);
+                var lastLeft = Canvas.GetLeft(_game.SelectedBitmap);
+                var lastTop = Canvas.GetTop(_game.SelectedBitmap);
+                Canvas.SetLeft(_game.SelectedBitmap, lastLeft + dx);
+                Canvas.SetTop(_game.SelectedBitmap, lastTop + dy);
 
-                _game.lastPosition = position;
+                _game.LastPosition = position;
             }
         }
 
         private void Image_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            _game.isDragging = false;
+            _game.IsDragging = false;
             var position = e.GetPosition(this);
 
             int x = 0, y = 0;
             getPos(position, ref x, ref y);
 
             int oldPosX = 0, oldPosY = 0;
-            getPos(_game.lastSelectedPosition, ref oldPosX, ref oldPosY);
+            getPos(_game.LastSelectedPosition, ref oldPosX, ref oldPosY);
 
             if (Math.Abs(oldPosY - y) + Math.Abs(oldPosX - x) == 1)
             {
-                if (x == _game.blankPos.Item1 && y == _game.blankPos.Item2)
+                if (x == _game.BlankPos.Item1 && y == _game.BlankPos.Item2)
                 {
+
+                    _moves.Add(getDirect(Tuple.Create(_game.BlankPos.Item1, _game.BlankPos.Item2), Tuple.Create(oldPosX, oldPosY)));
+
                     //set new coordinate for selectedImage
-                    Canvas.SetLeft(_game.selectedBitmap, UIView.cellsStartX + y * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
-                    Canvas.SetTop(_game.selectedBitmap, UIView.cellsStartY + x * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
+                    Canvas.SetLeft(_game.SelectedBitmap, UIView.CellsStartX + y * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
+                    Canvas.SetTop(_game.SelectedBitmap, UIView.CellsStartY + x * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
 
                     //get last position of selectedImage
                     int oldX = 0, oldY = 0;
-                    getPos(_game.lastSelectedPosition, ref oldX, ref oldY);
+                    getPos(_game.LastSelectedPosition, ref oldX, ref oldY);
 
                     //swap tag of selectedImage to blank cell that it just filled in
-                    _game.selectedBitmap.Tag = _game.blankPos;
-                    swapVal(_game.blankPos, Tuple.Create(oldX, oldY)); //swap value in model _matrix
-                    _game.blankPos = Tuple.Create(oldX, oldY); //blankpos chage to last position of selectedImage
+                    _game.SelectedBitmap.Tag = _game.BlankPos;
+                    swapVal(_game.BlankPos, Tuple.Create(oldX, oldY)); //swap value in model _matrix
+                    _game.BlankPos = Tuple.Create(oldX, oldY); //blankpos chage to last position of selectedImage
 
                     //printToDebug();
 
@@ -495,11 +524,11 @@ namespace WPFProject02_GamePuzzle
             else //return image to old position
             {
                 //get last position of selectedImage
-                getPos(_game.lastSelectedPosition, ref x, ref y);
+                getPos(_game.LastSelectedPosition, ref x, ref y);
 
                 //set coordinate for selectedImage
-                Canvas.SetLeft(_game.selectedBitmap, UIView.cellsStartX + y * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
-                Canvas.SetTop(_game.selectedBitmap, UIView.cellsStartY + x * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
+                Canvas.SetLeft(_game.SelectedBitmap, UIView.CellsStartX + y * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
+                Canvas.SetTop(_game.SelectedBitmap, UIView.CellsStartY + x * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
             }
 
             //MessageBox.Show($"{i} - {j}");
@@ -507,10 +536,10 @@ namespace WPFProject02_GamePuzzle
 
         private void Image_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            _game.isDragging = true;
-            _game.selectedBitmap = sender as Image;
-            _game.lastPosition = e.GetPosition(this);
-            _game.lastSelectedPosition = e.GetPosition(this);
+            _game.IsDragging = true;
+            _game.SelectedBitmap = sender as Image;
+            _game.LastPosition = e.GetPosition(this);
+            _game.LastSelectedPosition = e.GetPosition(this);
         }
 
         private int findChild(int x, int y)
@@ -532,7 +561,7 @@ namespace WPFProject02_GamePuzzle
 
         private void Img_KeyUp(object sender, KeyEventArgs e)
         {
-            int nextX = _game.blankPos.Item1, nextY = _game.blankPos.Item2;
+            int nextX = _game.BlankPos.Item1, nextY = _game.BlankPos.Item2;
             bool isKeyValid = false;
             switch (e.Key)
             {
@@ -559,23 +588,26 @@ namespace WPFProject02_GamePuzzle
             if (isKeyValid)
             {
                 //still not over range of matrix
-                if (!(nextX < 0 || nextY < 0 || nextX > UIView.numberOfRows - 1 || nextY > UIView.numberOfColumns - 1))
+                if (!(nextX < 0 || nextY < 0 || nextX > UIView.NumberOfRows - 1 || nextY > UIView.NumberOfColumns - 1))
                 {
-                    _game.selectedBitmap = canvasUI.Children[findChild(nextX, nextY)] as Image;
+                    //add move to track and auto play (if neccessary)
+                    _moves.Add(getDirect(Tuple.Create(_game.BlankPos.Item1, _game.BlankPos.Item2),Tuple.Create(nextX, nextY)));
+                    //get image to set new position
+                    _game.SelectedBitmap = canvasUI.Children[findChild(nextX, nextY)] as Image;
 
-                    int x = _game.blankPos.Item1, y = _game.blankPos.Item2;
-                    Canvas.SetLeft(_game.selectedBitmap, UIView.cellsStartX + y * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
-                    Canvas.SetTop(_game.selectedBitmap, UIView.cellsStartY + x * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
+                    int x = _game.BlankPos.Item1, y = _game.BlankPos.Item2;
+                    Canvas.SetLeft(_game.SelectedBitmap, UIView.CellsStartX + y * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
+                    Canvas.SetTop(_game.SelectedBitmap, UIView.CellsStartY + x * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
 
                     //get last position of selectedImage
                     int oldX = nextX, oldY = nextY;
 
                     //swap tag of selectedImage to blank cell that it just filled in
-                    _game.selectedBitmap.Tag = _game.blankPos;
-                    swapVal(_game.blankPos, Tuple.Create(oldX, oldY)); //swap value in model _matrix
-                    _game.blankPos = Tuple.Create(oldX, oldY); //blankpos chage to last position of selectedImage
+                    _game.SelectedBitmap.Tag = _game.BlankPos;
+                    swapVal(_game.BlankPos, Tuple.Create(oldX, oldY)); //swap value in model _matrix
+                    _game.BlankPos = Tuple.Create(oldX, oldY); //blankpos chage to last position of selectedImage
 
-                    printToDebug();
+                    //printToDebug();
 
                     if (_game.isFinish(_matrix))
                     {
@@ -602,18 +634,18 @@ namespace WPFProject02_GamePuzzle
             using (StreamWriter output = new StreamWriter(UIView.fileSave))
             {
                 //first line is number of rows & columns
-                output.WriteLine($"{UIView.numberOfRows} {UIView.numberOfColumns}");
+                output.WriteLine($"{UIView.NumberOfRows} {UIView.NumberOfColumns}");
 
                 //second line is mode of game: default ("") or custom image (path)
-                output.WriteLine(_game.imagePath);
+                output.WriteLine(_game.ImagePath);
 
                 //third line is blank pos coordinate
-                output.WriteLine($"{_game.blankPos.Item1} {_game.blankPos.Item2}");
+                output.WriteLine($"{_game.BlankPos.Item1} {_game.BlankPos.Item2}");
 
                 //folowing is values of _matrix[]
-                for (int i = 0; i < UIView.numberOfColumns; i++)
+                for (int i = 0; i < UIView.NumberOfColumns; i++)
                 {
-                    for (int j = 0; j < UIView.numberOfColumns; j++)
+                    for (int j = 0; j < UIView.NumberOfColumns; j++)
                         output.Write($"{_matrix[i, j]} ");
                     output.WriteLine("");
                 }
@@ -635,11 +667,11 @@ namespace WPFProject02_GamePuzzle
 
                 //first line is number of rows & columns
                 string[] tokens = lines[0].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                UIView.numberOfRows = Int32.Parse(tokens[0]);
-                UIView.numberOfColumns = Int32.Parse(tokens[1]);
+                UIView.NumberOfRows = Int32.Parse(tokens[0]);
+                UIView.NumberOfColumns = Int32.Parse(tokens[1]);
 
                 //second line is mode of game
-                _game.imagePath = lines[1];
+                _game.ImagePath = lines[1];
 
                 //third line is blank pos coordinate of preview game
                 tokens = lines[2].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
@@ -650,8 +682,8 @@ namespace WPFProject02_GamePuzzle
                 ResetAll();
 
                 //Model
-                _matrix = new int[UIView.numberOfRows, UIView.numberOfColumns];
-                _image = new Image[UIView.numberOfRows * UIView.numberOfColumns];
+                _matrix = new int[UIView.NumberOfRows, UIView.NumberOfColumns];
+                _image = new Image[UIView.NumberOfRows * UIView.NumberOfColumns];
                 _game.InitGame(tmpX, tmpY);
                 getSize(false);
 
@@ -672,13 +704,13 @@ namespace WPFProject02_GamePuzzle
                 drawLine();
 
                 //load image 
-                if (_game.imagePath == "")
+                if (_game.ImagePath == "")
                 {
                     loadDefaultImage();
                 }
                 else
                 {
-                    loadCustomImage(_game.imagePath);
+                    loadCustomImage(_game.ImagePath);
                 }
 
                 //timer
@@ -698,6 +730,8 @@ namespace WPFProject02_GamePuzzle
             //            _image[i * UIView.numberOfColumns + j + 1] = null;
             //    }
             //}
+
+            _moves = new List<string>();
 
             //reset UI
             const int numberOfBasisChildren = 2;
@@ -723,9 +757,9 @@ namespace WPFProject02_GamePuzzle
                 getSize(true);
 
                 //Model
-                _matrix = new int[UIView.numberOfRows, UIView.numberOfColumns];
-                _image = new Image[UIView.numberOfRows * UIView.numberOfColumns];
-                _game.InitGame(UIView.numberOfRows - 1, UIView.numberOfColumns - 1);
+                _matrix = new int[UIView.NumberOfRows, UIView.NumberOfColumns];
+                _image = new Image[UIView.NumberOfRows * UIView.NumberOfColumns];
+                _game.InitGame(UIView.NumberOfRows - 1, UIView.NumberOfColumns - 1);
 
                 //UI
                 drawLine();
@@ -734,13 +768,13 @@ namespace WPFProject02_GamePuzzle
                 scambleMatrix();
 
                 //load image 
-                if (_game.imagePath == "")
+                if (_game.ImagePath == "")
                 {
                     loadDefaultImage();
                 }
                 else
                 {
-                    loadCustomImage(_game.imagePath);
+                    loadCustomImage(_game.ImagePath);
                 }
 
                 //timer
@@ -755,20 +789,20 @@ namespace WPFProject02_GamePuzzle
         /// <param name="e"></param>
         private void Window_MouseLeave(object sender, MouseEventArgs e)
         {
-            if (_game.isDragging)
+            if (_game.IsDragging)
             {
                 //stop dragging image
-                _game.isDragging = false;
+                _game.IsDragging = false;
 
                 //get last position of selectedImage
                 int x = 0, y = 0;
-                getPos(_game.lastSelectedPosition, ref x, ref y);
+                getPos(_game.LastSelectedPosition, ref x, ref y);
 
                 //set coordinate for selectedImage
-                if (_game.selectedBitmap != null)
+                if (_game.SelectedBitmap != null)
                 {
-                    Canvas.SetLeft(_game.selectedBitmap, UIView.cellsStartX + y * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
-                    Canvas.SetTop(_game.selectedBitmap, UIView.cellsStartY + x * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
+                    Canvas.SetLeft(_game.SelectedBitmap, UIView.CellsStartX + y * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
+                    Canvas.SetTop(_game.SelectedBitmap, UIView.CellsStartY + x * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
                 }
             }
         }
@@ -785,12 +819,62 @@ namespace WPFProject02_GamePuzzle
 
         private void Guide_Click(object sender, RoutedEventArgs e)
         {
-                
+            MessageBox.Show("Use mouse to drag image or use arrow key to move blank image.", "Controls", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void Solve_Click(object sender, RoutedEventArgs e)
         {
+            int tmpCount = _moves.Count;
+            while (tmpCount > 0)
+            {
+                tmpCount--;
+                int nextX = _game.BlankPos.Item1, nextY = _game.BlankPos.Item2;
+                switch (_moves[tmpCount])
+                {
+                    case "D":
+                        nextX -= 1;
+                        break;
+                    case "U":
+                        nextX += 1;
+                        break;
+                    case "R":
+                        nextY -= 1;
+                        break;
+                    case "L":
+                        nextY += 1;
+                        break;
+                    default:
+                        break;
+                }
 
+                //still not over range of matrix
+                if (!(nextX < 0 || nextY < 0 || nextX > UIView.NumberOfRows - 1 || nextY > UIView.NumberOfColumns - 1))
+                {
+                    //add move to track and auto play (if neccessary)
+                    //_moves.Add(getDirect(Tuple.Create(_game.BlankPos.Item1, _game.BlankPos.Item2), Tuple.Create(nextX, nextY)));
+                    //get image to set new position
+                    _game.SelectedBitmap = canvasUI.Children[findChild(nextX, nextY)] as Image;
+
+                    int x = _game.BlankPos.Item1, y = _game.BlankPos.Item2;
+                    Canvas.SetLeft(_game.SelectedBitmap, UIView.CellsStartX + y * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
+                    Canvas.SetTop(_game.SelectedBitmap, UIView.CellsStartY + x * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
+
+                    //get last position of selectedImage
+                    int oldX = nextX, oldY = nextY;
+
+                    //swap tag of selectedImage to blank cell that it just filled in
+                    _game.SelectedBitmap.Tag = _game.BlankPos;
+                    swapVal(_game.BlankPos, Tuple.Create(oldX, oldY)); //swap value in model _matrix
+                    _game.BlankPos = Tuple.Create(oldX, oldY); //blankpos chage to last position of selectedImage
+
+                }
+            }
+            
+
+            if (_game.isFinish(_matrix))
+            {
+                _game.Won();
+            }
         }
     }
 }
