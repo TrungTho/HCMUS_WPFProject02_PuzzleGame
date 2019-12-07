@@ -1,39 +1,40 @@
-﻿<Fluent:RibbonWindow x:Class="WPFProject02_GamePuzzle.MainWindow"
+﻿<Window x:Class="WPFProject02_GamePuzzle.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFProject02_GamePuzzle"
-        xmlns:Fluent="urn:fluent-ribbon"
         mc:Ignorable="d"
-        Title="MainWindow" Height="750" Width="600"
+        Title="MainWindow" Height="780" Width="600"
         Loaded="Window_Loaded"
         MouseMove="Window_MouseMove"
         KeyUp="Img_KeyUp"
-        MouseLeave="RibbonWindow_MouseLeave"
+        MouseLeave="Window_MouseLeave"
                    >
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <Canvas Name="canvasUI" Background="Gray">
 
-        <Fluent:Ribbon Grid.Row="0">
-            <!--Backstage-->
-            <Fluent:Ribbon.Menu>
-                <Fluent:Backstage Header="Options" Foreground="Black" Background="CadetBlue">
-                    <Fluent:BackstageTabControl>
-                        <Fluent:Button Click="newGame_Click" Header="New game"/>
-                        <Fluent:Button Click="saveGame_Click" Header="Save game"/>
-                        <Fluent:Button Click="loadGame_Click" Header="Load game"/>
-                    </Fluent:BackstageTabControl>
-                </Fluent:Backstage>
-            </Fluent:Ribbon.Menu>
-        </Fluent:Ribbon>
+        <DockPanel>
+            <Menu DockPanel.Dock="Top">
+                <MenuItem Header="_Option">
+                    <MenuItem Click="newGame_Click" Header="_New game"/>
+                    <MenuItem Click="saveGame_Click" Header="_Save game" />
+                    <MenuItem Click="loadGame_Click" Header="_Load game" />
+                    <Separator />
+                    <MenuItem Header="_Exit" Click="Exit_Click" />
+                </MenuItem>
+                
+                <MenuItem Header="_Help">
+                    <MenuItem Click="Solve_Click" Header="_Auto Solve"/>
+                    <MenuItem Click="Guide_Click" Header="_Game Control" /> 
+                </MenuItem>
 
-        <Canvas Name="canvasUI">
-            <Label Content="debug:" Canvas.Left="403" Canvas.Top="669" />
-            <TextBlock Name="textblockForDebug" Width="100" Height="25" Canvas.Left="469" Canvas.Top="669"/>
-            <TextBlock Name="textblockTimer" Text="" FontSize="30" TextAlignment="Center"  Width="100" Height="50" Background="Azure"/>
-        </Canvas>
-    </Grid>
-</Fluent:RibbonWindow>
+                <MenuItem Header="_About" Click="About_Click"/>
+
+
+            </Menu>
+        </DockPanel>
+        
+        <TextBlock Name="textblockTimer" Text="" Foreground="Red" FontWeight="Bold" FontSize="30" TextAlignment="Center"  Width="100" Height="50" Background="CadetBlue" Canvas.Left="239" Canvas.Top="242"/>
+    </Canvas>
+
+</Window>
