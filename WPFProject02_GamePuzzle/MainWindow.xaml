@@ -8,8 +8,9 @@
         Title="MainWindow" Height="780" Width="600"
         Loaded="Window_Loaded"
         MouseMove="Window_MouseMove"
-        KeyUp="Img_KeyUp"
+        KeyUp="Window_KeyUp"
         MouseLeave="Window_MouseLeave"
+        
                    >
     <Canvas Name="canvasUI" Background="Gray">
 

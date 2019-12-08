@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,6 +12,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -28,10 +30,9 @@ namespace WPFProject02_GamePuzzle
             InitializeComponent();
         }
 
-        static DispatcherTimer _countdownTimer;
-        private int _time;
-
-        //class for game - controling
+        /// <summary>
+        /// class for game - controling
+        /// </summary>
         class Game
         {
             public string UserName { get; set; }
@@ -53,17 +54,13 @@ namespace WPFProject02_GamePuzzle
             /// <param name="y"></param> y - coordinate of blankpos (last cell)
             public void InitGame(int x, int y)
             {
-                //timeOfRound = 0;
                 UserName = "";
-                //numberOfRounds = 0;
-                NumberOfScrambles = 10;//UIView.NumberOfColumns*20; //just for testing
+                NumberOfScrambles = UIView.NumberOfColumns*20; //just for testing
                 BlankPos = Tuple.Create(x, y);
                 IsDragging = false;
                 SelectedBitmap = null;
                 MaxTime = 3;
                 IsNewGame = true;
-                //lastPosition;
-                //newBlankPos;
             }
 
             public void Won()
@@ -94,7 +91,9 @@ namespace WPFProject02_GamePuzzle
             }
         }
 
-        //class to control constants of details in game
+        /// <summary>
+        /// class to control constants of details in game
+        /// </summary>
         public class UIView
         {
             //changeabel value
@@ -112,10 +111,13 @@ namespace WPFProject02_GamePuzzle
             public const int heightOfCell = 70;
             public const int widthOfImage = 60;
             public const int heightOfImage = 60;
-            public const int widthOfPreviewImage = 200;
-            public const int heightOfPreviewImage = 200;
+            public const int widthOfPreviewImage = 250;
+            public const int heightOfPreviewImage = 250;
             public const string fileSave = "saveGame.txt";
         }
+
+        static DispatcherTimer _countdownTimer;
+        private int _time;
 
         private void startTimer()
         {
@@ -140,49 +142,6 @@ namespace WPFProject02_GamePuzzle
                 _game.Lose();
                 _countdownTimer.Stop();
             }
-        }
-
-        private void getSize(bool isNewGame)
-        {
-            if (isNewGame)
-            {
-                var screen = new BootScreen();
-                if (screen.ShowDialog() == true)
-                {
-                    UIView.NumberOfColumns = screen.userChoice;
-                    UIView.NumberOfRows = screen.userChoice;
-                }
-                else
-                {
-                    this.Close();
-                }
-
-                //detect mode 
-                string resMode = "";
-                if (screen.isDefaultMode == false)
-                    resMode = screen.userImagePath;
-
-                _game.ImagePath = resMode;
-            }
-
-            //calculate coordinate of preview image and cells
-            UIView.PreviewImageStartX = ((int)this.Width - UIView.widthOfPreviewImage) / 2;
-            UIView.PreviewImageStartY = ((int)this.Height - UIView.heightOfPreviewImage - UIView.NumberOfRows * UIView.heightOfCell) / 6 + (int)textblockTimer.Height;
-
-            UIView.CellsStartX = ((int)this.Width - UIView.NumberOfColumns * UIView.widthOfCell) / 2;
-            UIView.CellsStartY = 2 * UIView.PreviewImageStartY + UIView.heightOfPreviewImage;
-        }
-
-        /// <summary>
-        /// function to return coordinate in matrix of mouse's cursor
-        /// </summary>
-        /// <param name="position"></param> Point value
-        /// <param name="i"></param> in - 0, out - coordinate in matrix
-        /// <param name="j"></param> in - 0, out - coordinate in matrix
-        private void getPos(Point position,ref int i, ref int j)
-        {
-            i = ((int)position.Y - UIView.CellsStartY) / UIView.heightOfCell;
-            j = ((int)position.X - UIView.CellsStartX) / UIView.widthOfCell;
         }
 
         //model init
@@ -265,10 +224,13 @@ namespace WPFProject02_GamePuzzle
                     {
                         int step = UIView.NumberOfColumns;
                         string tmpImageName = $"DefaultImages/number{_matrix[i, j]}.png";
-                        var img = new Image();
-                        img.Width = UIView.widthOfImage;
-                        img.Height = UIView.heightOfImage;
-                        img.Source = new BitmapImage(new Uri(tmpImageName, UriKind.Relative));
+                        var img = new Image
+                        {
+                            Width = UIView.widthOfImage,
+                            Height = UIView.heightOfImage,
+                            Source = new BitmapImage(new Uri(tmpImageName, UriKind.Relative)),
+                            Name = $"image{_matrix[i,j]}"
+                        };
                         canvasUI.Children.Add(img);
 
                         Canvas.SetLeft(img, UIView.CellsStartX + j * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
@@ -277,7 +239,6 @@ namespace WPFProject02_GamePuzzle
                         img.MouseLeftButtonDown += Image_MouseLeftButtonDown;
                         img.PreviewMouseLeftButtonUp += Image_PreviewMouseLeftButtonUp;
                         //for debug tag of control
-                        img.MouseRightButtonUp += Img_MouseRightButtonUp;
 
                         img.Tag = new Tuple<int, int>(i, j);
                     }
@@ -294,9 +255,9 @@ namespace WPFProject02_GamePuzzle
             var source = new BitmapImage(new Uri(tmpPreviewName, UriKind.Absolute));
 
             //detect min dimesion
-            int leng = (int)source.Width;
-            if (source.Height < source.Width)
-                leng = (int)source.Height;
+            int leng = (int)source.PixelWidth;
+            if (source.PixelHeight < source.PixelWidth)
+                leng = (int)source.PixelHeight;
 
             var previewImg = new Image();
             previewImg.Width = UIView.widthOfPreviewImage;
@@ -321,20 +282,18 @@ namespace WPFProject02_GamePuzzle
                         var rect = new Int32Rect(j * w, i * h, w, h);
                         var cropBitmap = new CroppedBitmap(source, rect);
 
-                        var img = new Image();
-                        img.Stretch = Stretch.Fill;
-                        img.Width = UIView.widthOfImage;
-                        img.Height = UIView.heightOfImage;
-                        img.Source = cropBitmap;
-                        //canvasUI.Children.Add(img);
-
-                        //Canvas.SetLeft(img, UIView.cellsStartX + j * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
-                        //Canvas.SetTop(img, UIView.cellsStartY + i * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
+                        var img = new Image
+                        {
+                            Stretch = Stretch.Fill,
+                            Width = UIView.widthOfImage,
+                            Height = UIView.heightOfImage,
+                            Source = cropBitmap,
+                            Name = $"image{ (i * UIView.NumberOfRows + 1 + j) }"
+                        };
 
                         img.MouseLeftButtonDown += Image_MouseLeftButtonDown;
                         img.PreviewMouseLeftButtonUp += Image_PreviewMouseLeftButtonUp;
                         //for debug tag of control
-                        img.MouseRightButtonUp += Img_MouseRightButtonUp;
 
                         _image[i * UIView.NumberOfRows + 1 + j] = img;
                         //img.Tag = new Tuple<int, int>(i, j);
@@ -362,17 +321,118 @@ namespace WPFProject02_GamePuzzle
         }
 
         /// <summary>
+        /// get number of cells, init size of cell,.. from custom dialog
+        /// </summary>
+        /// <param name="isNewGame"></param> new game or load game
+        private void getSize(bool isNewGame)
+        {
+            if (isNewGame)
+            {
+                var screen = new BootScreen();
+                if (screen.ShowDialog() == true)
+                {
+                    UIView.NumberOfColumns = screen.userChoice;
+                    UIView.NumberOfRows = screen.userChoice;
+                }
+                else
+                {
+                    this.Close();
+                }
+
+                //detect mode 
+                string resMode = "";
+                if (screen.isDefaultMode == false)
+                    resMode = screen.userImagePath;
+
+                _game.ImagePath = resMode;
+            }
+
+            //calculate coordinate of preview image and cells
+            UIView.PreviewImageStartX = ((int)this.Width - UIView.widthOfPreviewImage) / 2;
+            UIView.PreviewImageStartY = ((int)this.Height - UIView.heightOfPreviewImage - UIView.NumberOfRows * UIView.heightOfCell) / 6 + (int)textblockTimer.Height;
+
+            UIView.CellsStartX = ((int)this.Width - UIView.NumberOfColumns * UIView.widthOfCell) / 2;
+            UIView.CellsStartY = 2 * UIView.PreviewImageStartY - (int)textblockTimer.Height + UIView.heightOfPreviewImage;
+        }
+
+        /*BUS*/
+        /// <summary>
+        /// funtion to find which image in coordinate (x,y) of canvasUI
+        /// </summary>
+        /// <param name="x"></param> x coordinate
+        /// <param name="y"></param> y coordinate
+        /// <returns></returns> index of image in canvasUI.Children[]
+        private int findChild(int x, int y)
+        {
+            for (int i = 0; i < canvasUI.Children.Count; i++)
+            {
+                if (canvasUI.Children[i] is Image)
+                {
+                    var child = canvasUI.Children[i] as Image;
+                    var tag = child.Tag as Tuple<int, int>;
+                    if (tag.Item1 == x && tag.Item2 == y)
+                        return i;
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// function to return coordinate in matrix from mouse's cursor position
+        /// </summary>
+        /// <param name="position"></param> Point value
+        /// <param name="i"></param> in - 0, out - coordinate in matrix
+        /// <param name="j"></param> in - 0, out - coordinate in matrix
+        private void getPos(Point position, ref int i, ref int j)
+        {
+            i = ((int)position.Y - UIView.CellsStartY) / UIView.heightOfCell;
+            j = ((int)position.X - UIView.CellsStartX) / UIView.widthOfCell;
+        }
+
+        /// <summary>
+        /// capture event that cursor leave window but still dragging the selected image
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Window_MouseLeave(object sender, MouseEventArgs e)
+        {
+            if (_game.IsDragging)
+            {
+                //stop dragging image
+                _game.IsDragging = false;
+
+                //get last position of selectedImage
+                int x = 0, y = 0;
+                getPos(_game.LastSelectedPosition, ref x, ref y);
+
+                //set coordinate for selectedImage
+                if (_game.SelectedBitmap != null)
+                {
+                    Canvas.SetLeft(_game.SelectedBitmap, UIView.CellsStartX + y * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
+                    Canvas.SetTop(_game.SelectedBitmap, UIView.CellsStartY + x * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
+                }
+            }
+        }
+
+        /// <summary>
         /// function to swap 2 pos in _matrix
         /// </summary>
         /// <param name="a"></param> - first pos
         /// <param name="b"></param> - second pos
-        private void swapVal(Tuple<int,int>a, Tuple<int,int>b)
+        private void swapVal(Tuple<int, int> a, Tuple<int, int> b)
         {
             var tmp = _matrix[a.Item1, a.Item2];
             _matrix[a.Item1, a.Item2] = _matrix[b.Item1, b.Item2];
             _matrix[b.Item1, b.Item2] = tmp;
         }
 
+        /// <summary>
+        /// function to detect which direction that blank cell will move to next
+        /// </summary>
+        /// <param name="oldPos"></param> present position of blank cell
+        /// <param name="newPos"></param> next position that blank cell will be moved to
+        /// <returns></returns>
         private string getDirect(Tuple<int, int> oldPos, Tuple<int, int> newPos)
         {
             string res = "";
@@ -386,11 +446,11 @@ namespace WPFProject02_GamePuzzle
             }
             else
                 if (oldPos.Item1 > newPos.Item1)
-                {
-                    res = "U";
-                }
-                else
-                    res = "D";
+            {
+                res = "U";
+            }
+            else
+                res = "D";
 
             return res;
         }
@@ -429,7 +489,7 @@ namespace WPFProject02_GamePuzzle
                         nextY = random.Next(3) - 1;
                     }
                     while (Math.Abs(nextX) + Math.Abs(nextY) > 1);
-                    
+
                     nextX += tmpPos.Item1;
                     nextY += tmpPos.Item2;
                 }
@@ -444,21 +504,12 @@ namespace WPFProject02_GamePuzzle
             //printToDebug();
         }
 
-        /*BUS*/
-        private void printToDebug()
-        {
-            Debug.WriteLine("----------");
-
-            for (int i = 0; i < UIView.NumberOfColumns; i++)
-            {
-                for (int j = 0; j < UIView.NumberOfColumns; j++)
-                    Debug.Write(_matrix[i, j]);
-                Debug.WriteLine("");
-            }
-
-            Debug.WriteLine("----------");
-        }
-
+        /*Game control fuction*/
+        /// <summary>
+        /// Capture event cursor moving around window
+        /// </summary>
+        /// <param name="sender"></param> crsor
+        /// <param name="e"></param> argsu
         private void Window_MouseMove(object sender, MouseEventArgs e)
         {
             var position = e.GetPosition(this);
@@ -466,7 +517,7 @@ namespace WPFProject02_GamePuzzle
             int i = 0, j = 0;
             getPos(position, ref i, ref j);
 
-            this.Title = $"{position.X} - {position.Y}, a[{i}][{j}] , blank: [{_game.BlankPos.Item1}],[{_game.BlankPos.Item2}]";
+            //this.Title = $"{position.X} - {position.Y}, a[{i}][{j}] , blank: [{_game.BlankPos.Item1}],[{_game.BlankPos.Item2}]";
 
             if (_game.IsDragging) 
             {
@@ -482,6 +533,11 @@ namespace WPFProject02_GamePuzzle
             }
         }
 
+        /// <summary>
+        /// Capture event that an image was finish dragged
+        /// </summary>
+        /// <param name="sender"></param> selectedimage
+        /// <param name="e"></param> agrs m
         private void Image_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             _game.IsDragging = false;
@@ -534,6 +590,11 @@ namespace WPFProject02_GamePuzzle
             //MessageBox.Show($"{i} - {j}");
         }
 
+        /// <summary>
+        /// Capture the event that an image was just clicked
+        /// </summary>
+        /// <param name="sender"></param> selected image
+        /// <param name="e"></param> args
         private void Image_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             _game.IsDragging = true;
@@ -542,24 +603,12 @@ namespace WPFProject02_GamePuzzle
             _game.LastSelectedPosition = e.GetPosition(this);
         }
 
-        private int findChild(int x, int y)
-        {
-            for (int i=0; i < canvasUI.Children.Count;i++)
-            {
-                if (canvasUI.Children[i] is Image)
-                {
-                    var child = canvasUI.Children[i] as Image;
-                    var tag = child.Tag as Tuple<int, int>;
-                    if (tag.Item1 == x && tag.Item2 == y)
-                        return i;
-                }
-            }
-
-            //textblockForDebug.Text = "can't find image";
-            return -1;
-        }
-
-        private void Img_KeyUp(object sender, KeyEventArgs e)
+        /// <summary>
+        /// Capture the event that a arrow key was pressed and released
+        /// </summary>
+        /// <param name="sender"></param> window 
+        /// <param name="e"></param> args
+        private void Window_KeyUp(object sender, KeyEventArgs e)
         {
             int nextX = _game.BlankPos.Item1, nextY = _game.BlankPos.Item2;
             bool isKeyValid = false;
@@ -620,41 +669,47 @@ namespace WPFProject02_GamePuzzle
             }
         }
 
-        //debug stuffs
-        private void Img_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            var img = sender as Image;
-            var tag = img.Tag as Tuple<int, int>;
-            //textblockForDebug.Text = $"tag: {tag.Item1} - {tag.Item2}";
-        }
 
+        /*Game options*/
+        /// <summary>
+        /// function to save the current game to database
+        /// </summary>
+        /// <param name="sender"></param> button
+        /// <param name="e"></param> args
         private void saveGame_Click(object sender, RoutedEventArgs e)
         {
-            //open file
-            using (StreamWriter output = new StreamWriter(UIView.fileSave))
+            if (MessageBox.Show("Override last saved game?", "Save game", System.Windows.MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
-                //first line is number of rows & columns
-                output.WriteLine($"{UIView.NumberOfRows} {UIView.NumberOfColumns}");
-
-                //second line is mode of game: default ("") or custom image (path)
-                output.WriteLine(_game.ImagePath);
-
-                //third line is blank pos coordinate
-                output.WriteLine($"{_game.BlankPos.Item1} {_game.BlankPos.Item2}");
-
-                //folowing is values of _matrix[]
-                for (int i = 0; i < UIView.NumberOfColumns; i++)
+                //open file
+                using (StreamWriter output = new StreamWriter(UIView.fileSave))
                 {
-                    for (int j = 0; j < UIView.NumberOfColumns; j++)
-                        output.Write($"{_matrix[i, j]} ");
-                    output.WriteLine("");
+                    //first line is number of rows & columns
+                    output.WriteLine($"{UIView.NumberOfRows} {UIView.NumberOfColumns}");
+
+                    //second line is mode of game: default ("") or custom image (path)
+                    output.WriteLine(_game.ImagePath);
+
+                    //third line is blank pos coordinate
+                    output.WriteLine($"{_game.BlankPos.Item1} {_game.BlankPos.Item2}");
+
+                    //folowing is values of _matrix[]
+                    for (int i = 0; i < UIView.NumberOfColumns; i++)
+                    {
+                        for (int j = 0; j < UIView.NumberOfColumns; j++)
+                            output.Write($"{_matrix[i, j]} ");
+                        output.WriteLine("");
+                    }
+
                 }
 
+                MessageBox.Show("Game saved!");
             }
-
-            MessageBox.Show("Game saved!");
         }
 
+        /// <summary>
+        /// function to load the latest saved game from database to this window
+        /// </summary>
+        /// <param name="sender"></param> button
         private void loadGame_Click(object sender, RoutedEventArgs e)
         {
             MessageBoxResult messageBoxResult = MessageBox.Show("Quit and Load game?", "Load Game", System.Windows.MessageBoxButton.YesNo);
@@ -718,19 +773,11 @@ namespace WPFProject02_GamePuzzle
             }
         }
 
+        /// <summary>
+        /// function to reset all UIs and models to restart a new game or load previous game
+        /// </summary>
         private void ResetAll()
         {
-            ////reset model
-            //for (int i = 0; i < UIView.numberOfColumns; i++)
-            //{
-            //    for (int j = 0; j < UIView.numberOfColumns; j++)
-            //    {
-            //        _matrix[i, j] = 0;
-            //        if (i * UIView.numberOfColumns + j + 1 != _image.Length)
-            //            _image[i * UIView.numberOfColumns + j + 1] = null;
-            //    }
-            //}
-
             _moves = new List<string>();
 
             //reset UI
@@ -745,6 +792,10 @@ namespace WPFProject02_GamePuzzle
                 _countdownTimer.Stop();
         }
 
+        /// <summary>
+        /// function to start a whole new game 
+        /// </summary>
+        /// <param name="sender"></param> button
         private void newGame_Click(object sender, RoutedEventArgs e)
         {
             if (sender == null || (sender != null && MessageBox.Show("Start a New game?", "New Game", System.Windows.MessageBoxButton.YesNo) == MessageBoxResult.Yes))
@@ -783,48 +834,44 @@ namespace WPFProject02_GamePuzzle
         }
 
         /// <summary>
-        /// capture event that cursor leave window but still dragging the selected image
+        /// function to exit window
         /// </summary>
         /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Window_MouseLeave(object sender, MouseEventArgs e)
+        private void Exit_Click(object sender, RoutedEventArgs e)
         {
-            if (_game.IsDragging)
+            if (MessageBox.Show("Exit game?", "Exit", System.Windows.MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
-                //stop dragging image
-                _game.IsDragging = false;
-
-                //get last position of selectedImage
-                int x = 0, y = 0;
-                getPos(_game.LastSelectedPosition, ref x, ref y);
-
-                //set coordinate for selectedImage
-                if (_game.SelectedBitmap != null)
-                {
-                    Canvas.SetLeft(_game.SelectedBitmap, UIView.CellsStartX + y * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
-                    Canvas.SetTop(_game.SelectedBitmap, UIView.CellsStartY + x * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
-                }
+                this.Close();
             }
         }
 
-        private void Exit_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
-
+        /// <summary>
+        /// app & dev team informations 
+        /// </summary>
+        /// <param name="sender"></param>
         private void About_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Window Programming Course\nMini Project 02 - Puzzle game\n1712798 - 1712270", "About", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
+        /// <summary>
+        /// some guide to play game
+        /// </summary>
+        /// <param name="sender"></param>
         private void Guide_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Use mouse to drag image or use arrow key to move blank image.", "Controls", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void Solve_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// asynctask to demo how autoplay solve puzzle by track back scramble
+        /// </summary>
+        /// <returns></returns>
+        private async Task Solve_ClickAsync()
         {
             int tmpCount = _moves.Count;
+            int maxCount = tmpCount;
+            int speedAnimation = 100;
             while (tmpCount > 0)
             {
                 tmpCount--;
@@ -850,8 +897,6 @@ namespace WPFProject02_GamePuzzle
                 //still not over range of matrix
                 if (!(nextX < 0 || nextY < 0 || nextX > UIView.NumberOfRows - 1 || nextY > UIView.NumberOfColumns - 1))
                 {
-                    //add move to track and auto play (if neccessary)
-                    //_moves.Add(getDirect(Tuple.Create(_game.BlankPos.Item1, _game.BlankPos.Item2), Tuple.Create(nextX, nextY)));
                     //get image to set new position
                     _game.SelectedBitmap = canvasUI.Children[findChild(nextX, nextY)] as Image;
 
@@ -860,21 +905,32 @@ namespace WPFProject02_GamePuzzle
                     Canvas.SetTop(_game.SelectedBitmap, UIView.CellsStartY + x * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
 
                     //get last position of selectedImage
-                    int oldX = nextX, oldY = nextY;
+                    int oldX = nextX, oldY = nextY;                    
 
                     //swap tag of selectedImage to blank cell that it just filled in
                     _game.SelectedBitmap.Tag = _game.BlankPos;
                     swapVal(_game.BlankPos, Tuple.Create(oldX, oldY)); //swap value in model _matrix
                     _game.BlankPos = Tuple.Create(oldX, oldY); //blankpos chage to last position of selectedImage
 
+                    await Task.Delay(TimeSpan.FromMilliseconds(speedAnimation)); //wait for seeing
                 }
             }
-            
+
 
             if (_game.isFinish(_matrix))
             {
                 _game.Won();
             }
+        }
+
+        /// <summary>
+        /// funtion to solve the puzzle automatically
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Solve_Click(object sender, RoutedEventArgs e)
+        {
+            Solve_ClickAsync();
         }
     }
 }
