@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -42,7 +43,7 @@ namespace WPFProject02_GamePuzzle
             public Image SelectedBitmap { get; set; }
             public Point LastPosition { get; set; }
             public Point LastSelectedPosition { get; set; }
-            public int MaxTime { get; set; } //minutes
+            public int MaxTime { get; set; } //second
             public string ImagePath { get; set; }
             public bool IsNewGame { get; set; } //to dectect user load game or just init a new game
 
@@ -54,19 +55,27 @@ namespace WPFProject02_GamePuzzle
             /// <param name="y"></param> y - coordinate of blankpos (last cell)
             public void InitGame(int x, int y)
             {
-                UserName = "";
                 NumberOfScrambles = UIView.NumberOfColumns*20; //just for testing
                 BlankPos = Tuple.Create(x, y);
                 IsDragging = false;
                 SelectedBitmap = null;
-                MaxTime = 3;
+                MaxTime = 3*60; 
                 IsNewGame = true;
             }
 
-            public void Won()
+            public void Won(bool isAuto)
             {
                 _countdownTimer.Stop();
-                MessageBox.Show("Win!!!");
+                _moves.Clear();
+                MessageBox.Show("You Won!!!", "Success", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                if (isAuto==false)
+                {
+                    int tmpTime = 180 - _time;
+                    int minute = tmpTime / 60;
+                    int second = tmpTime % 60;
+                    var userTime = string.Format("{0}:{1}", minute.ToString().PadLeft(2, '0'), second.ToString().PadLeft(2, '0'));
+                    addHighScore(UserName,userTime);
+                }
             }
 
             public void Lose()
@@ -114,20 +123,37 @@ namespace WPFProject02_GamePuzzle
             public const int widthOfPreviewImage = 250;
             public const int heightOfPreviewImage = 250;
             public const string fileSave = "saveGame.txt";
+            public const string highScore = "highScore.txt";
         }
 
-        static DispatcherTimer _countdownTimer;
-        private int _time;
+        public class HighScore
+        {
+            public int id { get; set; }
+            public string userName { get; set; }
+            public string userTime { get; set; }
+        }
 
+        /*timer section*/
+        static DispatcherTimer _countdownTimer;
+        static int _time;
+        
+        /// <summary>
+        /// start count downtimer
+        /// </summary>
         private void startTimer()
         {
-            _time = _game.MaxTime * 60;//convert from minute to second
+            _time = _game.MaxTime;//convert from minute to second
             _countdownTimer = new DispatcherTimer();
             _countdownTimer.Interval = new TimeSpan(0, 0, 1);
             _countdownTimer.Tick += _countdownTimer_Tick;
             _countdownTimer.Start();
         }
 
+        /// <summary>
+        /// what happend in 1 tick
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void _countdownTimer_Tick(object sender, EventArgs e)
         {
             if (_time!=0)
@@ -148,17 +174,22 @@ namespace WPFProject02_GamePuzzle
         int[,] _matrix; //matrix of images initialized
         Image[] _image; //references to from model to UI
         Game _game; //New game initialized
-        List<string> _moves;
+        static List<string> _moves;
+        static BindingList<HighScore> highScores;
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
            //timer's UI setup
-            Canvas.SetLeft(textblockTimer, (this.Width - textblockTimer.Width) / 2);
+            Canvas.SetLeft(textblockTimer, (this.Width*2/3 - textblockTimer.Width) / 2);
             Canvas.SetTop(textblockTimer, 20);
+
+            highScores = new BindingList<HighScore>();
+            loadHighScore();
 
             //start a new game
             newGame_Click(null, null);
         }
+
 
         /*Game prepare*/
         /// <summary>
@@ -170,9 +201,11 @@ namespace WPFProject02_GamePuzzle
             //Draw column
             for (int i = 0; i < UIView.NumberOfRows + 1; i++)
             {
-                var line = new Line();
-                line.StrokeThickness = 2;
-                line.Stroke = new SolidColorBrush(Colors.Aqua);
+                var line = new Line
+                {
+                    StrokeThickness = 2,
+                    Stroke = new SolidColorBrush(Colors.Aqua)
+                };
                 canvasUI.Children.Add(line);
 
                 line.X1 = UIView.CellsStartX + i * UIView.widthOfCell;
@@ -185,9 +218,11 @@ namespace WPFProject02_GamePuzzle
             //Draw row
             for (int i = 0; i < UIView.NumberOfColumns + 1; i++)
             {
-                var line = new Line();
-                line.StrokeThickness = 2;
-                line.Stroke = new SolidColorBrush(Colors.Aqua);
+                var line = new Line
+                {
+                    StrokeThickness = 2,
+                    Stroke = new SolidColorBrush(Colors.Aqua)
+                };
                 canvasUI.Children.Add(line);
 
                 line.X1 = UIView.CellsStartX;
@@ -196,6 +231,22 @@ namespace WPFProject02_GamePuzzle
                 line.X2 = UIView.CellsStartX + (UIView.NumberOfRows) * UIView.widthOfCell;
                 line.Y2 = UIView.CellsStartY + i * UIView.heightOfCell;
             }
+
+            //draw separator
+            var separatorLine = new Line
+            {
+                StrokeThickness = 5,
+                Stroke = new SolidColorBrush(Colors.Aqua)
+            };
+
+            canvasUI.Children.Add(separatorLine);
+
+            separatorLine.X1 = this.Width * 2 / 3;
+            separatorLine.Y1 = 0;
+
+            separatorLine.X2 = this.Width * 2 / 3;
+            separatorLine.Y2 = this.Height;
+
 
         }
 
@@ -333,6 +384,7 @@ namespace WPFProject02_GamePuzzle
                 {
                     UIView.NumberOfColumns = screen.userChoice;
                     UIView.NumberOfRows = screen.userChoice;
+                    _game.UserName = screen.userName;
                 }
                 else
                 {
@@ -347,13 +399,115 @@ namespace WPFProject02_GamePuzzle
                 _game.ImagePath = resMode;
             }
 
+            //set arrow button
+            Canvas.SetLeft(labelControl, 519);
+            Canvas.SetTop(labelControl, 470);
+
+            Canvas.SetTop(buttonDown, this.Height * 3 / 4);
+            Canvas.SetLeft(buttonDown, (this.Width * 2/ 3+ (this.Width*1/3 - buttonDown.Width)/2));
+
+            Canvas.SetTop(buttonLeft, this.Height * 3 / 4);
+            Canvas.SetLeft(buttonLeft, (this.Width * 2 / 3 + (this.Width * 1 / 3 - buttonLeft.Width) / 2) - buttonLeft.Width - 10);
+
+            Canvas.SetTop(buttonRight, this.Height * 3 / 4);
+            Canvas.SetLeft(buttonRight, (this.Width * 2 / 3 + (this.Width * 1 / 3 - buttonRight.Width) / 2) + buttonRight.Width + 10);
+
+            Canvas.SetTop(buttonUp, this.Height * 3 / 4 - buttonUp.Height - 10);
+            Canvas.SetLeft(buttonUp, (this.Width * 2 / 3 + (this.Width * 1 / 3 - buttonUp.Width) / 2));
+
+            //set highscore board
+            Canvas.SetTop(labelhighScore, 40);
+            Canvas.SetLeft(labelhighScore, 489);
+
+            Canvas.SetTop(listviewHighScore, 100);
+            Canvas.SetLeft(listviewHighScore, this.Width * 2 / 3 + (this.Width * 1 / 3 - listviewHighScore.Width) / 2);
+
             //calculate coordinate of preview image and cells
-            UIView.PreviewImageStartX = ((int)this.Width - UIView.widthOfPreviewImage) / 2;
+            UIView.PreviewImageStartX = ((int)this.Width*2/3 - UIView.widthOfPreviewImage) / 2;
             UIView.PreviewImageStartY = ((int)this.Height - UIView.heightOfPreviewImage - UIView.NumberOfRows * UIView.heightOfCell) / 6 + (int)textblockTimer.Height;
 
-            UIView.CellsStartX = ((int)this.Width - UIView.NumberOfColumns * UIView.widthOfCell) / 2;
+            UIView.CellsStartX = ((int)this.Width*2/3 - UIView.NumberOfColumns * UIView.widthOfCell) / 2;
             UIView.CellsStartY = 2 * UIView.PreviewImageStartY - (int)textblockTimer.Height + UIView.heightOfPreviewImage;
         }
+
+        public static void sortHighScore()
+        {
+            for (int i = 0; i < highScores.Count - 1; i++)
+            {
+                for (int j = i + 1; j < highScores.Count; j++)
+                {
+                    int comparison = String.Compare(highScores[i].userTime, highScores[j].userTime, comparisonType: StringComparison.OrdinalIgnoreCase);
+                    if (comparison > 0)
+                    {
+                        var tmpItem = highScores[i];
+                        highScores[i] = highScores[j];
+                        highScores[j] = tmpItem;
+                    }
+                }
+            }
+
+            while (highScores.Count != 5)
+                highScores.RemoveAt(4);
+
+            for (int i = 0; i < highScores.Count; i++)
+                highScores[i].id = i + 1;
+        }
+
+        private void loadHighScore()
+        {
+            try
+            {
+                string[] lines = File.ReadAllLines(UIView.highScore);
+                int tmpID = 0;
+                foreach (var line in lines)
+                {
+                    tmpID++;
+                    string[] tokens = line.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                    var item = new HighScore
+                    {
+                        id = tmpID,
+                        userName = tokens[0]
+                    };
+                    item.userTime = tokens[1];
+
+                    highScores.Add(item);
+                }
+
+                sortHighScore();
+            }
+            catch (Exception e)
+            {
+
+            }
+
+            listviewHighScore.ItemsSource = highScores;
+        }
+
+        public static void addHighScore(string userName, string userTime)
+        {
+            var newItem = new HighScore
+            {
+                id = 0,
+                userTime = userTime,
+                userName = userName
+            };
+
+            highScores.Add(newItem);
+
+            sortHighScore();
+
+            //update database
+            //open file
+            using (StreamWriter output = new StreamWriter(UIView.highScore))
+            {
+                foreach (var score in highScores)
+                {
+                    output.WriteLine($"{score.userName} {score.userTime}");
+                }
+
+            }
+        }
+
 
         /*BUS*/
         /// <summary>
@@ -504,6 +658,7 @@ namespace WPFProject02_GamePuzzle
             //printToDebug();
         }
 
+
         /*Game control fuction*/
         /// <summary>
         /// Capture event cursor moving around window
@@ -573,7 +728,7 @@ namespace WPFProject02_GamePuzzle
 
                     if (_game.isFinish(_matrix))
                     {
-                        _game.Won();
+                        _game.Won(false);
                     }
                 }
             }
@@ -660,7 +815,7 @@ namespace WPFProject02_GamePuzzle
 
                     if (_game.isFinish(_matrix))
                     {
-                        _game.Won();
+                        _game.Won(false);
                     }
 
                     //debug
@@ -683,14 +838,24 @@ namespace WPFProject02_GamePuzzle
                 //open file
                 using (StreamWriter output = new StreamWriter(UIView.fileSave))
                 {
-                    //first line is number of rows & columns
-                    output.WriteLine($"{UIView.NumberOfRows} {UIView.NumberOfColumns}");
+                    //first line is number of rows & columns / time remain
+                    output.WriteLine($"{UIView.NumberOfRows} {UIView.NumberOfColumns} {_time}");
 
                     //second line is mode of game: default ("") or custom image (path)
                     output.WriteLine(_game.ImagePath);
 
                     //third line is blank pos coordinate
                     output.WriteLine($"{_game.BlankPos.Item1} {_game.BlankPos.Item2}");
+
+                    //fourth line is current user
+                    output.WriteLine(_game.UserName);
+
+                    //fifth line is moves had moved
+                    foreach (var move in _moves)
+                    {
+                        output.Write($"{move} ");
+                    }
+                    output.WriteLine("");
 
                     //folowing is values of _matrix[]
                     for (int i = 0; i < UIView.NumberOfColumns; i++)
@@ -715,6 +880,8 @@ namespace WPFProject02_GamePuzzle
             MessageBoxResult messageBoxResult = MessageBox.Show("Quit and Load game?", "Load Game", System.Windows.MessageBoxButton.YesNo);
             if (messageBoxResult == MessageBoxResult.Yes)
             {
+                //reset UI
+                ResetAll();
 
                 string[] lines = File.ReadAllLines(UIView.fileSave);
 
@@ -724,6 +891,7 @@ namespace WPFProject02_GamePuzzle
                 string[] tokens = lines[0].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                 UIView.NumberOfRows = Int32.Parse(tokens[0]);
                 UIView.NumberOfColumns = Int32.Parse(tokens[1]);
+                int tmpTime = Int32.Parse(tokens[2]);
 
                 //second line is mode of game
                 _game.ImagePath = lines[1];
@@ -733,17 +901,27 @@ namespace WPFProject02_GamePuzzle
                 int tmpX = Int32.Parse(tokens[0]);
                 int tmpY = Int32.Parse(tokens[1]);
 
-                //reset UI
-                ResetAll();
+                //fourth line is 
+                _game.UserName = lines[3];
+
+                //fifth line is moves had moved in previous game
+                tokens = lines[4].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                _moves.Clear(); //reset moves of current game
+                //add new moves to _moves
+                foreach (var move in tokens)
+                {
+                    _moves.Add(move);
+                }
 
                 //Model
                 _matrix = new int[UIView.NumberOfRows, UIView.NumberOfColumns];
                 _image = new Image[UIView.NumberOfRows * UIView.NumberOfColumns];
                 _game.InitGame(tmpX, tmpY);
+                _game.MaxTime = tmpTime;
                 getSize(false);
 
                 int row = 0;
-                for (int countLine = 3; countLine < lines.Length; countLine++)
+                for (int countLine = 5; countLine < lines.Length; countLine++)
                 {
                     tokens = lines[countLine].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -781,7 +959,7 @@ namespace WPFProject02_GamePuzzle
             _moves = new List<string>();
 
             //reset UI
-            const int numberOfBasisChildren = 2;
+            const int numberOfBasisChildren = 9;//some children define in xaml
             while (canvasUI.Children.Count!=numberOfBasisChildren)
             {
                 canvasUI.Children.RemoveAt(numberOfBasisChildren);
@@ -919,7 +1097,7 @@ namespace WPFProject02_GamePuzzle
 
             if (_game.isFinish(_matrix))
             {
-                _game.Won();
+                _game.Won(true);
             }
         }
 
@@ -931,6 +1109,65 @@ namespace WPFProject02_GamePuzzle
         private void Solve_Click(object sender, RoutedEventArgs e)
         {
             Solve_ClickAsync();
+        }
+
+        private void ButtonDirect_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            int nextX = _game.BlankPos.Item1, nextY = _game.BlankPos.Item2;
+            bool isKeyValid = false;
+            switch (button.Name)
+            {
+                case "buttonUp":
+                    nextX -= 1;
+                    isKeyValid = true;
+                    break;
+                case "buttonDown":
+                    nextX += 1;
+                    isKeyValid = true;
+                    break;
+                case "buttonLeft":
+                    nextY -= 1;
+                    isKeyValid = true;
+                    break;
+                case "buttonRight":
+                    nextY += 1;
+                    isKeyValid = true;
+                    break;
+                default:
+                    break;
+            }
+
+            if (isKeyValid)
+            {
+                //still not over range of matrix
+                if (!(nextX < 0 || nextY < 0 || nextX > UIView.NumberOfRows - 1 || nextY > UIView.NumberOfColumns - 1))
+                {
+                    //add move to track and auto play (if neccessary)
+                    _moves.Add(getDirect(Tuple.Create(_game.BlankPos.Item1, _game.BlankPos.Item2), Tuple.Create(nextX, nextY)));
+                    //get image to set new position
+                    _game.SelectedBitmap = canvasUI.Children[findChild(nextX, nextY)] as Image;
+
+                    int x = _game.BlankPos.Item1, y = _game.BlankPos.Item2;
+                    Canvas.SetLeft(_game.SelectedBitmap, UIView.CellsStartX + y * UIView.widthOfCell + (UIView.widthOfCell - UIView.widthOfImage) / 2);
+                    Canvas.SetTop(_game.SelectedBitmap, UIView.CellsStartY + x * UIView.heightOfCell + (UIView.heightOfCell - UIView.heightOfImage) / 2);
+
+                    //get last position of selectedImage
+                    int oldX = nextX, oldY = nextY;
+
+                    //swap tag of selectedImage to blank cell that it just filled in
+                    _game.SelectedBitmap.Tag = _game.BlankPos;
+                    swapVal(_game.BlankPos, Tuple.Create(oldX, oldY)); //swap value in model _matrix
+                    _game.BlankPos = Tuple.Create(oldX, oldY); //blankpos chage to last position of selectedImage
+
+                    //printToDebug();
+
+                    if (_game.isFinish(_matrix))
+                    {
+                        _game.Won(false);
+                    }
+                }
+            }
         }
     }
 }

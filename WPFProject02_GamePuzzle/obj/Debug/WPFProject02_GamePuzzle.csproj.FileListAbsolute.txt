@@ -15,13 +15,4 @@ C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects
 C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\obj\Debug\BootScreen.g.cs
 C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\obj\Debug\BootScreen.baml
 C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\obj\Debug\WPFProject02_GamePuzzle.csprojAssemblyReference.cache
-C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\bin\Debug\ControlzEx.dll
-C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\bin\Debug\Fluent.dll
-C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\bin\Debug\Microsoft.Xaml.Behaviors.dll
-C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\bin\Debug\ControlzEx.pdb
-C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\bin\Debug\ControlzEx.xml
-C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\bin\Debug\Fluent.pdb
-C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\bin\Debug\Fluent.xml
-C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\bin\Debug\Microsoft.Xaml.Behaviors.xml
-C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\obj\Debug\WPFProject02_GamePuzzle.csproj.CopyComplete
 C:\Users\TTTPC\OneDrive - VNU-HCMUS\HCMUS\3_Junior\Semester1\Windows\4. Projects\Project02\WPFProject02_GamePuzzle\WPFProject02_GamePuzzle\obj\Debug\App.baml

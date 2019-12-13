@@ -23,6 +23,7 @@ namespace WPFProject02_GamePuzzle
         public int userChoice { get; set; } //3 - 3x3, 4 - 4x4, 5 - 5x5
         public bool isDefaultMode { get; set; } //load image from resources or from user choice
         public string userImagePath { get; set; } //string to user image 
+        public string userName { get; set; } 
 
         public BootScreen()
         {
@@ -31,36 +32,45 @@ namespace WPFProject02_GamePuzzle
 
         private void ButtonOK_Click(object sender, RoutedEventArgs e)
         {
-            if (radio3_3.IsChecked == true)
+            if (textBoxName.Text.ToString()!="")
             {
-                userChoice = 3;
-            }
-            else
-                if (radio4_4.IsChecked == true)
-            {
-                userChoice = 4;
-            }
-            else
-            {
-                userChoice = 5;
-            }
-
-            if (radioDefaultImage.IsChecked == true)
-            {
-                isDefaultMode = true;
-            }
-            else
-            {
-                isDefaultMode = false;
-                var screen = new OpenFileDialog();
-                if (screen.ShowDialog() == true)
+                if (radio3_3.IsChecked == true)
                 {
-                    userImagePath = screen.FileName;
+                    userChoice = 3;
                 }
+                else
+                if (radio4_4.IsChecked == true)
+                {
+                    userChoice = 4;
+                }
+                else
+                {
+                    userChoice = 5;
+                }
+
+                if (radioDefaultImage.IsChecked == true)
+                {
+                    isDefaultMode = true;
+                }
+                else
+                {
+                    isDefaultMode = false;
+                    var screen = new OpenFileDialog();
+                    if (screen.ShowDialog() == true)
+                    {
+                        userImagePath = screen.FileName;
+                    }
+                }
+
+                userName = textBoxName.Text.ToString();
+
+                this.DialogResult = true;
+                this.Close();
             }
-                    
-            this.DialogResult = true;
-            this.Close();
+            else //username still not typed
+            {
+                MessageBox.Show("Please type your in-game name!", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
     }
 }

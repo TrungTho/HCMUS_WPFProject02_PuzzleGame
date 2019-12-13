@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFProject02_GamePuzzle"
         mc:Ignorable="d"
-        Title="MainWindow" Height="780" Width="600"
+        Title="MainWindow" Height="800" Width="700"
+        WindowStartupLocation="Manual" 
+        Left="100" Top="20"
         Loaded="Window_Loaded"
         MouseMove="Window_MouseMove"
         KeyUp="Window_KeyUp"
@@ -23,10 +25,10 @@
                     <Separator />
                     <MenuItem Header="_Exit" Click="Exit_Click" />
                 </MenuItem>
-                
+
                 <MenuItem Header="_Help">
                     <MenuItem Click="Solve_Click" Header="_Auto Solve"/>
-                    <MenuItem Click="Guide_Click" Header="_Game Control" /> 
+                    <MenuItem Click="Guide_Click" Header="_Game Control" />
                 </MenuItem>
 
                 <MenuItem Header="_About" Click="About_Click"/>
@@ -34,8 +36,44 @@
 
             </Menu>
         </DockPanel>
-        
-        <TextBlock Name="textblockTimer" Text="" Foreground="Red" FontWeight="Bold" FontSize="30" TextAlignment="Center"  Width="100" Height="50" Background="CadetBlue" Canvas.Left="239" Canvas.Top="242"/>
+
+        <TextBlock Name="textblockTimer" Text="" Foreground="Red" FontWeight="Bold" FontSize="30" TextAlignment="Center"  Width="100" Height="50" Background="CadetBlue" Canvas.Left="37" Canvas.Top="1037"/>
+
+        <Label Content="Controls:" Name="labelControl" FontSize="30" Foreground="Red" FontStyle="Italic" FontWeight="Bold" Canvas.Left="37" Canvas.Top="1050"/>
+
+        <Button Name="buttonUp" Width="50" Height="50" Click="ButtonDirect_Click" Canvas.Left="37" Canvas.Top="1050">
+            <StackPanel>
+                <Image Source="ImageButton/up.png"/>
+            </StackPanel>
+        </Button>
+        <Button Name="buttonDown" Width="50" Height="50" Click="ButtonDirect_Click" Canvas.Left="37" Canvas.Top="1050">
+            <StackPanel>
+                <Image Source="ImageButton/down.png"/>
+            </StackPanel>
+        </Button>
+        <Button Name="buttonLeft" Width="50" Height="50" Click="ButtonDirect_Click" Canvas.Left="37" Canvas.Top="1050">
+            <StackPanel>
+                <Image Source="ImageButton/left.png" />
+            </StackPanel>
+        </Button>
+
+        <Button Name="buttonRight" Width="50" Height="50" Click="ButtonDirect_Click" Canvas.Left="37" Canvas.Top="1050">
+            <StackPanel>
+                <Image Source="ImageButton/right.png"/>
+            </StackPanel>
+        </Button>
+
+        <Label Content="HIGH SCORE" Name="labelhighScore" FontSize="30" Foreground="Red" FontStyle="Italic" FontWeight="Bold" Canvas.Left="37" Canvas.Top="1063"/>
+
+        <ListView Name="listviewHighScore" Width="180" Height="200" Canvas.Top="1000" ScrollViewer.HorizontalScrollBarVisibility="Disabled" >
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="No." Width="30" DisplayMemberBinding="{Binding id}" />
+                    <GridViewColumn Header="User" Width="100" DisplayMemberBinding="{Binding userName}" />
+                    <GridViewColumn Header="Time" Width="50" DisplayMemberBinding="{Binding userTime}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
     </Canvas>
 
 </Window>
